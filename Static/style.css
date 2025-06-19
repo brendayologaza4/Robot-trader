@@ -1,0 +1,215 @@
+/* Thème global sombre */
+body {
+    background-color: #1e1e2f;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #f0f0f0;
+}
+
+/* Conteneur principal */
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 30px;
+    background-color: #2c2c3c;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Titres */
+h1, h2, h3 {
+    text-align: center;
+    color: #ffffff;
+}
+
+/* Formulaires */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select {
+    padding: 12px;
+    border: 1px solid #555;
+    border-radius: 8px;
+    background-color: #2f2f40;
+    color: #f0f0f0;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.4);
+    outline: none;
+}
+
+input[type="submit"],
+button {
+    padding: 12px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+input[type="submit"]:hover,
+button:hover {
+    background-color: #2980b9;
+}
+
+/* Tableau */
+.tableau {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.tableau th,
+.tableau td {
+    padding: 14px;
+    text-align: left;
+}
+
+.tableau th {
+    background-color: #3498db;
+    color: white;
+    font-weight: bold;
+}
+
+.tableau tr:nth-child(even) {
+    background-color: #2c2c3c;
+}
+
+/* Dashboard */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 30px;
+}
+
+/* Cartes visibles dans thème sombre */
+.card {
+    padding: 24px;
+    background-color: #38394f;
+    color: #f0f0f0;
+    border: 1px solid #555;
+    border-left: 8px solid #3498db;
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Couleurs spécifiques */
+.card.utilisateur {
+    border-left-color: #2980b9;
+}
+.card.solde {
+    border-left-color: #27ae60;
+}
+.card.performance {
+    border-left-color: #e74c3c;
+}
+
+/* Graphique */
+.chart-container {
+    width: 100%;
+    height: 400px;
+    margin-top: 40px;
+    background-color: #38394f;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Zone admin */
+.admin-panel {
+    border: 2px dashed #e67e22;
+    padding: 20px;
+    background-color: #fffaf2;
+    margin-top: 30px;
+    border-radius: 10px;
+}
+
+/* Messages */
+.success-message {
+    color: #27ae60;
+    font-weight: bold;
+    background-color: #e9f9ee;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.error-message {
+    color: #c0392b;
+    font-weight: bold;
+    background-color: #fdecea;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+/* ✅ Valeurs dynamiques améliorées : couleurs fortes et contraste */
+.card .value {
+    font-size: 2.4rem; /* Un peu plus grand */
+    font-weight: 900;  /* Très gras */
+    margin-top: 12px;
+    display: inline-block;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.15); /* Fond blanc translucide */
+    border-radius: 10px;
+    color: #ffffff; /* Texte blanc pur */
+    text-shadow:
+        0 0 8px rgba(0,0,0,0.9),
+        0 0 15px rgba(0,0,0,0.7);
+    box-shadow:
+        0 0 15px rgba(255, 255, 255, 0.4);
+    transition: color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Couleurs spécifiques en overlay : on met un filtre pour la teinte */
+.card.utilisateur .value {
+    background: rgba(255, 223, 0, 0.3); /* Jaune vif translucide */
+    color: #fff600;
+    box-shadow:
+        0 0 15px rgba(255, 223, 0, 0.8);
+}
+
+.card.solde .value {
+    background: rgba(50, 205, 50, 0.3); /* Vert lime translucide */
+    color: #7fff00;
+    box-shadow:
+        0 0 15px rgba(50, 205, 50, 0.8);
+}
+
+.card.performance .value.positive {
+    background: rgba(0, 255, 0, 0.3); /* Vert néon translucide */
+    color: #00ff00;
+    box-shadow:
+        0 0 15px #00ff00;
+}
+
+.card.performance .value.negative {
+    background: rgba(255, 36, 0, 0.3); /* Rouge vif translucide */
+    color: #ff2400;
+    box-shadow:
+        0 0 15px #ff2400;
+}
