@@ -1,0 +1,8 @@
+flask
+flask-pymongo
+ccxt
+pandas
+numpy
+xgboost
+scikit-learn
+gunicorn
