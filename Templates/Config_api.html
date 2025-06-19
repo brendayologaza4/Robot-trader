@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Configurer mes clés Binance</title>
+</head>
+<body>
+    <h2>Configurer l’API Binance</h2>
+    <form method="POST">
+        <label for="api_key">Clé API :</label><br>
+        <input type="text" name="api_key" value="{{ api_key }}" required><br><br>
+        
+        <label for="api_secret">Clé Secrète :</label><br>
+        <input type="text" name="api_secret" value="{{ api_secret }}" required><br><br>
+
+        <input type="submit" value="Enregistrer">
+    </form>
+</body>
+</html>
