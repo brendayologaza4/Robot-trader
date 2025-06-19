@@ -14,8 +14,9 @@ import os  # ✅ Pour variables d’environnement
 app = Flask(__name__)
 app.secret_key = "votre_cle_super_secrete"
 
-# ✅ MongoDB depuis variable d'environnement (Render ou local)
-app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://localhost:27017/test")
+# ✅ MongoDB depuis variable d'environnement (Render ou local), base = Robottrader
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/Robottrader")
+app.config["MONGO_URI"] = MONGO_URI
 mongo = PyMongo(app)
 
 try:
@@ -35,7 +36,6 @@ def rsi(prices, period=14):
     return 100 - (100 / (1 + rs))
 
 # --------- ROUTES ---------
-
 @app.route('/')
 def index():
     if 'username' in session:
@@ -208,7 +208,6 @@ def market_data():
     except Exception as e:
         return jsonify({"error": str(e)})
 
-# --------- ✅ API DASHBOARD DATA ---------
 @app.route('/api/dashboard_data')
 def dashboard_data_api():
     if 'username' not in session or mongo is None:
@@ -247,5 +246,5 @@ def dashboard_data_api():
 # --------- LANCEMENT DE L'APP ---------
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # ✅ Port dynamique pour Render
-    print("✅ Le code est bien en train de s’exécuter !")
-    app.run(debug=False, host="0.0.0.0", port=port)  # ✅ Prêt pour Render
+    print("✅ Le code est bien en train de s’exécuter avec la base Robottrader !")
+    app.run(debug=False, host="0.0.0.0", port=port)
