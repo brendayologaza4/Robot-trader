@@ -1,0 +1,2 @@
+MONGO_URI=mongodb+srv://brendayologaza4:victoire47@cluster0.mongodb.net/Robottrader?retryWrites=true&w=majority&appName=Robottrader
+PORT=10000
