@@ -8,20 +8,23 @@ import numpy as np
 import datetime
 from sklearn.ensemble import RandomForestClassifier
 import xgboost as xgb
-import os  # ✅ Pour variables d’environnement
+import os
 
 # --------- CONFIG FLASK & MongoDB ---------
 app = Flask(__name__)
 app.secret_key = "votre_cle_super_secrete"
 
-# ✅ MongoDB depuis variable d'environnement (Render ou local), base = Robottrader
+# ✅ Connexion MongoDB (Render ou local), base = Robottrader
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/Robottrader")
 app.config["MONGO_URI"] = MONGO_URI
 mongo = PyMongo(app)
 
+# ✅ Accès à la base MongoDB "Robottrader"
+db = mongo.db
+
 try:
     mongo.cx.admin.command('ping')
-    print("✅ Connexion MongoDB réussie !")
+    print("✅ Connexion MongoDB réussie à la base Robottrader !")
 except Exception as e:
     print("❌ Erreur MongoDB :", e)
 
@@ -50,10 +53,10 @@ def register():
         code_admin = request.form.get('code_admin')
         role = "admin" if code_admin == "0404" else "client"
 
-        if mongo.db.users.find_one({"username": username}):
+        if db.users.find_one({"username": username}):
             return "Nom d'utilisateur déjà utilisé"
         
-        mongo.db.users.insert_one({
+        db.users.insert_one({
             "username": username,
             "password": password,
             "role": role,
@@ -69,7 +72,7 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = mongo.db.users.find_one({"username": username})
+        user = db.users.find_one({"username": username})
         if user and check_password_hash(user['password'], password):
             session['username'] = username
             return redirect(url_for('dashboard'))
@@ -86,9 +89,9 @@ def config_api():
     if 'username' not in session:
         return redirect(url_for('login'))
     
-    user = mongo.db.users.find_one({"username": session['username']})
+    user = db.users.find_one({"username": session['username']})
     if request.method == 'POST':
-        mongo.db.users.update_one(
+        db.users.update_one(
             {"username": session['username']},
             {"$set": {
                 "api_key": request.form['api_key'],
@@ -106,7 +109,7 @@ def dashboard():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    user = mongo.db.users.find_one({"username": session['username']})
+    user = db.users.find_one({"username": session['username']})
     if not user:
         return "Utilisateur introuvable"
     if not user.get('api_key') or not user.get('api_secret'):
@@ -115,7 +118,7 @@ def dashboard():
     is_admin = user['role'] == "admin"
     username = user['username']
     balance = round(user.get('balance', 0), 2)
-    investments = list(mongo.db.history.find({"username": username}))
+    investments = list(db.history.find({"username": username}))
     dates = [inv['date'] for inv in investments]
     profits = [inv['profit'] for inv in investments]
 
@@ -140,10 +143,10 @@ def dashboard():
 @app.route('/set_balance', methods=['POST'])
 def set_balance():
     if 'username' in session:
-        user = mongo.db.users.find_one({"username": session['username']})
+        user = db.users.find_one({"username": session['username']})
         if user['role'] != "admin":
             return "Accès refusé"
-        mongo.db.users.update_one(
+        db.users.update_one(
             {"username": request.form['target_username']},
             {"$set": {"balance": float(request.form['new_balance'])}})
         return redirect(url_for('dashboard'))
@@ -154,7 +157,7 @@ def trade_auto():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    user = mongo.db.users.find_one({"username": session['username']})
+    user = db.users.find_one({"username": session['username']})
     binance = ccxt.binance({
         'apiKey': user['api_key'],
         'secret': user['api_secret']
@@ -179,15 +182,15 @@ def trade_auto():
         profit = np.random.uniform(-10, 25)
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-        mongo.db.history.insert_one({
+        db.history.insert_one({
             "username": session['username'],
             "date": now,
             "action": action,
             "amount": amount,
             "profit": round(profit, 2)
         })
-        mongo.db.users.update_one({"username": session['username']},
-                                  {"$inc": {"balance": profit}})
+        db.users.update_one({"username": session['username']},
+                            {"$inc": {"balance": profit}})
         return redirect(url_for('dashboard'))
     except Exception as e:
         return f"Erreur trading automatique : {e}"
@@ -210,17 +213,17 @@ def market_data():
 
 @app.route('/api/dashboard_data')
 def dashboard_data_api():
-    if 'username' not in session or mongo is None:
+    if 'username' not in session or db is None:
         return jsonify({"error": "Non autorisé"}), 401
 
-    user = mongo.db.users.find_one({"username": session['username']})
+    user = db.users.find_one({"username": session['username']})
     if user is None:
         return jsonify({"error": "Utilisateur introuvable"}), 404
 
     username = user.get("username", "N/A")
     balance = round(user.get("balance", 0), 2)
 
-    investments = list(mongo.db.history.find({"username": username}))
+    investments = list(db.history.find({"username": username}))
     dates = [inv['date'] for inv in investments]
     profits = [inv['profit'] for inv in investments]
 
@@ -245,6 +248,6 @@ def dashboard_data_api():
 
 # --------- LANCEMENT DE L'APP ---------
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # ✅ Port dynamique pour Render
+    port = int(os.environ.get("PORT", 5000))
     print("✅ Le code est bien en train de s’exécuter avec la base Robottrader !")
     app.run(debug=False, host="0.0.0.0", port=port)
