@@ -1,20 +1,17 @@
-# Utilise une image officielle Python comme base
-FROM python:3.11-slim
+# Utilise une image Python officielle
+FROM python:3.10
 
-# Définit le répertoire de travail dans le conteneur
+# Définir le dossier de travail
 WORKDIR /app
 
-# Copie les fichiers de dépendances
-COPY requirements.txt .
+# Copier les fichiers
+COPY . /app
 
-# Installe les dépendances Python
+# Installer les dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copie tout le contenu du projet dans le conteneur
-COPY . .
-
-# Expose le port sur lequel Flask va écouter
+# Exposer le port utilisé par Gunicorn
 EXPOSE 5000
 
-# Définit la commande pour lancer l'application Flask
-CMD ["python", "app.py"]
+# Commande pour démarrer l'app avec Gunicorn
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
