@@ -1,4 +1,5 @@
 # 🚀 Démarrage de l'app Flask
+# app.py
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,29 +7,20 @@ import ccxt
 import pandas as pd
 import numpy as np
 import datetime
-from sklearn.ensemble import RandomForestClassifier
-import xgboost as xgb
 import os
+from xgboost import XGBClassifier
 
-# --------- CONFIG FLASK & MongoDB ---------
+# --------- CONFIG ---------
 app = Flask(__name__)
 app.secret_key = "votre_cle_super_secrete"
 
-# ✅ Connexion MongoDB (Render ou local), base = Robottrader
+# MongoDB (local ou Render)
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/Robottrader")
 app.config["MONGO_URI"] = MONGO_URI
 mongo = PyMongo(app)
-
-# ✅ Accès à la base MongoDB "Robottrader"
 db = mongo.db
 
-try:
-    mongo.cx.admin.command('ping')
-    print("✅ Connexion MongoDB réussie à la base Robottrader !")
-except Exception as e:
-    print("❌ Erreur MongoDB :", e)
-
-# --------- UTILS ---------
+# --------- RSI CALCUL ---------
 def rsi(prices, period=14):
     delta = prices.diff()
     gain = delta.where(delta > 0, 0)
@@ -52,10 +44,8 @@ def register():
         password = generate_password_hash(request.form['password'])
         code_admin = request.form.get('code_admin')
         role = "admin" if code_admin == "0404" else "client"
-
         if db.users.find_one({"username": username}):
             return "Nom d'utilisateur déjà utilisé"
-        
         db.users.insert_one({
             "username": username,
             "password": password,
@@ -88,7 +78,6 @@ def logout():
 def config_api():
     if 'username' not in session:
         return redirect(url_for('login'))
-    
     user = db.users.find_one({"username": session['username']})
     if request.method == 'POST':
         db.users.update_one(
@@ -99,7 +88,6 @@ def config_api():
             }}
         )
         return redirect(url_for('dashboard'))
-
     return render_template('config_api.html',
                            api_key=user.get('api_key', ''),
                            api_secret=user.get('api_secret', ''))
@@ -108,23 +96,33 @@ def config_api():
 def dashboard():
     if 'username' not in session:
         return redirect(url_for('login'))
-
+    
     user = db.users.find_one({"username": session['username']})
     if not user:
         return "Utilisateur introuvable"
-    if not user.get('api_key') or not user.get('api_secret'):
-        return redirect(url_for('config_api'))
+    
+    api_key = user.get('api_key')
+    api_secret = user.get('api_secret')
+    
+    balance = 0
+    if api_key and api_secret:
+        try:
+            binance = ccxt.binance({
+                'apiKey': api_key,
+                'secret': api_secret
+            })
+            account = binance.fetch_balance()
+            balance = float(account['total'].get('USDT', 0))
+        except Exception as e:
+            print(f"❌ Erreur récupération solde : {e}")
 
-    is_admin = user['role'] == "admin"
-    username = user['username']
-    balance = round(user.get('balance', 0), 2)
-    investments = list(db.history.find({"username": username}))
+    investments = list(db.history.find({"username": user['username']}))
     dates = [inv['date'] for inv in investments]
     profits = [inv['profit'] for inv in investments]
-
     performance = round(sum(profits), 2) if profits else 0
+
     transactions = [{
-        "date": inv['date'],
+        "date": inv.get("date"),
         "asset": "BTC/USDT",
         "type": inv.get("action", "N/A"),
         "amount": inv.get("amount", 0),
@@ -132,10 +130,10 @@ def dashboard():
     } for inv in investments]
 
     return render_template("dashboard.html",
-                           username=username,
-                           balance=balance,
+                           username=user['username'],
+                           balance=round(balance, 2),
                            performance=performance,
-                           is_admin=is_admin,
+                           is_admin=(user['role'] == "admin"),
                            transactions=transactions,
                            chart_labels=dates,
                            chart_data=profits)
@@ -158,12 +156,16 @@ def trade_auto():
         return redirect(url_for('login'))
 
     user = db.users.find_one({"username": session['username']})
-    binance = ccxt.binance({
-        'apiKey': user['api_key'],
-        'secret': user['api_secret']
-    })
+    if not user.get('api_key') or not user.get('api_secret'):
+        return "API Binance non configurée"
 
     try:
+        binance = ccxt.binance({
+            'apiKey': user['api_key'],
+            'secret': user['api_secret']
+        })
+        binance.set_sandbox_mode(False)
+
         symbol = "BTC/USDT"
         ohlcv = binance.fetch_ohlcv(symbol, timeframe='1h', limit=100)
         df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
@@ -173,13 +175,19 @@ def trade_auto():
 
         X = df[['rsi']]
         y = df['target']
-        model = xgb.XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+        model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
         model.fit(X[:-1], y[:-1])
         prediction = model.predict(X.tail(1))
 
         action = "buy" if prediction[0] == 1 else "sell"
-        amount = 10
-        profit = np.random.uniform(-10, 25)
+        amount = 10  # valeur fixe pour test
+
+        if action == "buy":
+            order = binance.create_market_buy_order(symbol, amount / df['close'].iloc[-1])
+        else:
+            order = binance.create_market_sell_order(symbol, amount / df['close'].iloc[-1])
+
+        profit = np.random.uniform(-5, 10)  # simulation de profit
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
         db.history.insert_one({
@@ -189,9 +197,9 @@ def trade_auto():
             "amount": amount,
             "profit": round(profit, 2)
         })
-        db.users.update_one({"username": session['username']},
-                            {"$inc": {"balance": profit}})
+
         return redirect(url_for('dashboard'))
+
     except Exception as e:
         return f"Erreur trading automatique : {e}"
 
@@ -213,11 +221,11 @@ def market_data():
 
 @app.route('/api/dashboard_data')
 def dashboard_data_api():
-    if 'username' not in session or db is None:
+    if 'username' not in session:
         return jsonify({"error": "Non autorisé"}), 401
 
     user = db.users.find_one({"username": session['username']})
-    if user is None:
+    if not user:
         return jsonify({"error": "Utilisateur introuvable"}), 404
 
     username = user.get("username", "N/A")
@@ -226,7 +234,6 @@ def dashboard_data_api():
     investments = list(db.history.find({"username": username}))
     dates = [inv['date'] for inv in investments]
     profits = [inv['profit'] for inv in investments]
-
     performance = round(sum(profits), 2) if profits else 0
 
     transactions = [{
@@ -246,8 +253,8 @@ def dashboard_data_api():
         "transactions": transactions
     })
 
-# --------- LANCEMENT DE L'APP ---------
+# --------- RUN APP ---------
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    print("✅ Le code est bien en train de s’exécuter avec la base Robottrader !")
+    print("✅ Serveur en ligne avec la base Robottrader !")
     app.run(debug=False, host="0.0.0.0", port=port)
