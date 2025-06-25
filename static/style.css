@@ -1,163 +1,131 @@
-/* Import de police moderne */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Robot Trader - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+<header>
+    Dashboard Robot Trader
+    <a href="{{ url_for('logout') }}"><button class="logout-btn">Déconnexion</button></a>
+</header>
 
-body {
-  font-family: 'Poppins', sans-serif;
-  background: #f1f3f6;
-  color: #2c3e50;
-  line-height: 1.6;
-}
+<div class="container">
+    {% if is_admin %}
+        <div class="card">
+            <h2>Bienvenue, Admin {{ admin.username }}</h2>
+            <p>Configuration des soldes clients :</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom d'utilisateur</th>
+                        <th>Solde (USDT)</th>
+                        <th>Nouveau solde</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <form action="{{ url_for('update_balance') }}" method="POST">
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.balance }}</td>
+                            <td>
+                                <input type="hidden" name="username" value="{{ user.username }}">
+                                <input type="number" step="0.01" name="new_balance" required>
+                            </td>
+                            <td><button type="submit">Modifier</button></td>
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card">
+            <h2>Bienvenue, {{ username }}</h2>
+            {% if balance > 0 %}
+                <p id="solde">Solde actuel : <strong>{{ balance }} USDT</strong></p>
+                <p id="performance" class="positive">Performance : +0.00%</p>
+                <canvas id="performanceChart" width="400" height="200"></canvas>
+            {% else %}
+                <p>Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
+            {% endif %}
+        </div>
 
-/* HEADER / NAVBAR */
-.header {
-  background: #ffffff;
-  padding: 15px 25px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
+        <div class="card crypto-table">
+            <h2>Marché des Cryptomonnaies</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Crypto</th>
+                        <th>Prix</th>
+                        <th>Variation 24h</th>
+                        <th>Volume</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>BTC/USDT</td><td>56,320</td><td class="positive">+2.3%</td><td>$18B</td></tr>
+                    <tr><td>ETH/USDT</td><td>3,480</td><td class="negative">-1.2%</td><td>$8.1B</td></tr>
+                    <tr><td>PAXG/USDT</td><td>2,340</td><td class="positive">+0.5%</td><td>$240M</td></tr>
+                    <tr><td>SOL/USDT</td><td>132</td><td class="positive">+4.1%</td><td>$1.5B</td></tr>
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
 
-.header h1 {
-  font-size: 20px;
-  color: #1e2a38;
-}
+{% if not is_admin and balance > 0 %}
+<script>
+    const labels = [...Array(20)].map((_, i) => `-${19 - i}`);
+    const initialBalance = {{ balance }};
+    let data = [initialBalance];
 
-.logout-btn {
-  background-color: #e74c3c;
-  color: white;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+    const chart = new Chart(document.getElementById('performanceChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Évolution du solde',
+                data: data,
+                borderColor: '#00cc99',
+                backgroundColor: 'rgba(0, 204, 153, 0.2)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            animation: false,
+            scales: {
+                y: { beginAtZero: false }
+            }
+        }
+    });
 
-.logout-btn:hover {
-  background-color: #c0392b;
-}
+    function updateChart() {
+        let last = data[data.length - 1];
+        let variation = last * (Math.random() * 0.01 - 0.005);
+        let newVal = +(last + variation).toFixed(2);
+        data.push(newVal);
+        if (data.length > 20) data.shift();
+        chart.data.datasets[0].data = data;
+        chart.update();
 
-/* CONTAINER PRINCIPAL */
-.container {
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 20px;
-}
+        const performance = ((newVal - initialBalance) / initialBalance * 100).toFixed(2);
+        const perfEl = document.getElementById('performance');
+        const soldeEl = document.getElementById('solde');
 
-/* BLOC DE CARTE GRAPHIQUE */
-.card {
-  background: #ffffff;
-  border-radius: 18px;
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.05);
-  padding: 30px;
-  transition: transform 0.3s ease;
-}
+        soldeEl.innerHTML = `Solde actuel : <strong>${newVal.toFixed(2)} USDT</strong>`;
+        perfEl.textContent = `Performance : ${performance > 0 ? '+' : ''}${performance}%`;
+        perfEl.className = performance >= 0 ? 'positive' : 'negative';
+    }
 
-.card:hover {
-  transform: translateY(-4px);
-}
-
-/* TITRES */
-.card h2 {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 15px;
-  color: #1e2a38;
-}
-
-/* INFO UTILISATEUR */
-.card p {
-  font-size: 16px;
-  margin-bottom: 8px;
-  color: #34495e;
-}
-
-.card strong {
-  font-weight: 600;
-  color: #000;
-}
-
-.performance {
-  font-size: 16px;
-  margin-top: 10px;
-  font-weight: 500;
-}
-
-.performance.positive {
-  color: #27ae60;
-}
-
-.performance.negative {
-  color: #e74c3c;
-}
-
-/* GRAPHIQUE */
-canvas {
-  margin-top: 30px;
-  border-radius: 12px;
-  background: #f9fbfc;
-  padding: 10px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.03);
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .container {
-    padding: 15px;
-  }
-
-  .card {
-    padding: 20px;
-  }
-
-  .header h1 {
-    font-size: 18px;
-  }
-
-  .logout-btn {
-    padding: 6px 12px;
-    font-size: 14px;
-  }
-}
-
-/* ANIMATION DE FOND (optionnelle) */
-body::after {
-  content: "";
-  position: fixed;
-  top: 10%;
-  left: 50%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(0, 123, 255, 0.06) 0%, transparent 80%);
-  transform: translateX(-50%);
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* ÉLÉGANCE DES BOUTONS OU AUTRES INPUTS SI NÉCESSAIRE */
-button,
-input[type="submit"] {
-  background-color: #3498db;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover,
-input[type="submit"]:hover {
-  background-color: #2980b9;
-}
+    setInterval(updateChart, 3000);
+</script>
+{% endif %}
+</body>
+</html>
