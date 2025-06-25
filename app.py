@@ -131,6 +131,22 @@ def update_balance():
     db.users.update_one({"username": target}, {"$set": {"balance": new_balance}})
     return redirect(url_for('dashboard'))
 
+# --- Voir le profil d’un utilisateur (admin uniquement) ---
+@app.route('/user/<username>')
+def user_profile(username):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    current_user = db.users.find_one({"username": session['username']})
+    if not current_user or current_user['role'] != 'admin':
+        return render_template('403.html'), 403
+
+    target_user = db.users.find_one({"username": username})
+    if not target_user:
+        return render_template('404.html'), 404
+
+    return render_template("user_profile.html", user=target_user)
+
 # --- Lancer app ---
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
