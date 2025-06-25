@@ -5,15 +5,26 @@
     <title>Dashboard Robot Trader</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
-        header { background: #222; color: #fff; padding: 10px; text-align: center; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
+        header { background: #1f1f1f; color: #fff; padding: 15px; text-align: center; position: relative; }
+        .logout-btn {
+            position: absolute; right: 20px; top: 15px;
+            background: #e74c3c; color: #fff; padding: 6px 12px;
+            border: none; border-radius: 4px; text-decoration: none;
+        }
         .container { padding: 20px; max-width: 900px; margin: auto; }
-        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card {
+            background: white; padding: 20px; margin-bottom: 20px;
+            border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
-        input[type="number"] { width: 80px; }
-        button { padding: 6px 12px; }
-        .logout-btn { float: right; margin-right: 10px; }
+        th, td { padding: 12px; border: 1px solid #ccc; text-align: center; }
+        input[type="number"] { width: 100px; padding: 5px; }
+        button { padding: 6px 14px; border: none; background: #3498db; color: white; border-radius: 4px; }
+        h2 { color: #333; }
+        #solde, #performance { font-size: 18px; margin: 8px 0; }
+        #performance.positive { color: green; }
+        #performance.negative { color: red; }
     </style>
 </head>
 <body>
@@ -57,38 +68,64 @@
     {% else %}
         <div class="card">
             <h2>Bienvenue, {{ username }}</h2>
-            <p>Solde actuel : <strong>{{ balance }} USDT</strong></p>
-            <p>Performance simulée : <strong>{{ performance }} USDT</strong></p>
-            <canvas id="performanceChart" width="400" height="200"></canvas>
+
+            {% if balance > 0 %}
+                <p id="solde">Solde actuel : <strong>{{ balance }} USDT</strong></p>
+                <p id="performance" class="positive">Performance : +0.00%</p>
+                <canvas id="performanceChart" width="400" height="200"></canvas>
+            {% else %}
+                <p>Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
+            {% endif %}
         </div>
     {% endif %}
 
 </div>
 
-{% if not is_admin %}
+{% if not is_admin and balance > 0 %}
 <script>
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    const performanceChart = new Chart(ctx, {
+    const labels = [...Array(20)].map((_, i) => `-${19 - i}`);
+    const initialBalance = {{ balance }};
+    let data = [initialBalance];
+    const chart = new Chart(document.getElementById('performanceChart'), {
         type: 'line',
         data: {
-            labels: {{ chart_labels|tojson }},
+            labels: labels,
             datasets: [{
                 label: 'Évolution du solde',
-                data: {{ chart_data|tojson }},
+                data: data,
+                borderColor: 'rgb(46, 204, 113)',
+                backgroundColor: 'rgba(46, 204, 113, 0.2)',
                 fill: true,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1,
-                backgroundColor: 'rgba(75, 192, 192, 0.2)'
+                tension: 0.3
             }]
         },
         options: {
+            animation: false,
             scales: {
-                y: {
-                    beginAtZero: false
-                }
+                y: { beginAtZero: false }
             }
         }
     });
+
+    function updateChart() {
+        let last = data[data.length - 1];
+        let variation = last * (Math.random() * 0.01 - 0.005); // entre -0.5% et +0.5%
+        let newVal = +(last + variation).toFixed(2);
+        data.push(newVal);
+        if (data.length > 20) data.shift();
+        chart.data.datasets[0].data = data;
+        chart.update();
+
+        const performance = ((newVal - initialBalance) / initialBalance * 100).toFixed(2);
+        const perfEl = document.getElementById('performance');
+        const soldeEl = document.getElementById('solde');
+
+        soldeEl.innerHTML = `Solde actuel : <strong>${newVal.toFixed(2)} USDT</strong>`;
+        perfEl.textContent = `Performance : ${performance > 0 ? '+' : ''}${performance}%`;
+        perfEl.className = performance >= 0 ? 'positive' : 'negative';
+    }
+
+    setInterval(updateChart, 3000); // toutes les 3 secondes
 </script>
 {% endif %}
 </body>
