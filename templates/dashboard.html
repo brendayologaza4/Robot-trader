@@ -4,19 +4,145 @@
     <meta charset="UTF-8">
     <title>Dashboard Robot Trader</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(to right, #1f2937, #111827);
+            color: #fff;
+            padding: 20px 40px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .logout-btn {
+            position: absolute;
+            right: 30px;
+            top: 20px;
+            background: #e74c3c;
+            color: #fff;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 14px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #eaeaea;
+            text-align: center;
+        }
+
+        th {
+            background: #f1f3f5;
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            width: 100px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        #solde, #performance {
+            font-size: 18px;
+            margin: 12px 0;
+        }
+
+        #performance.positive {
+            color: #27ae60;
+        }
+
+        #performance.negative {
+            color: #e74c3c;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            .logout-btn {
+                font-size: 12px;
+                padding: 6px 12px;
+                top: 15px;
+                right: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>🤖 Dashboard Robot Trader</h1>
-        <a href="{{ url_for('logout') }}" class="logout-btn">Déconnexion</a>
-    </header>
 
-    <main class="container">
-        {% if is_admin %}
-        <section class="card">
-            <h2>👤 Bienvenue, Admin {{ admin.username }}</h2>
-            <p>Gestion des soldes des utilisateurs :</p>
+<header>
+    Dashboard Robot Trader
+    <a href="{{ url_for('logout') }}" class="logout-btn">Déconnexion</a>
+</header>
+
+<div class="container">
+    {% if is_admin %}
+        <div class="card">
+            <h2>Bienvenue, Admin {{ admin.username }}</h2>
+            <p>Configuration des soldes clients :</p>
             <table>
                 <thead>
                     <tr>
@@ -27,7 +153,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for user in users %}
+                {% for user in users %}
                     <tr>
                         <form action="{{ url_for('update_balance') }}" method="POST">
                             <td>{{ user.username }}</td>
@@ -36,74 +162,74 @@
                                 <input type="hidden" name="username" value="{{ user.username }}">
                                 <input type="number" step="0.01" name="new_balance" required>
                             </td>
-                            <td><button type="submit" class="btn-update">Modifier</button></td>
+                            <td><button type="submit">Modifier</button></td>
                         </form>
                     </tr>
-                    {% endfor %}
+                {% endfor %}
                 </tbody>
             </table>
-        </section>
-        {% else %}
-        <section class="card">
-            <h2>👋 Bienvenue, {{ username }}</h2>
+        </div>
+    {% else %}
+        <div class="card">
+            <h2> 👋 Bienvenue, {{ username }}</h2>
 
             {% if balance > 0 %}
-            <p id="solde">💰 Solde actuel : <strong>{{ balance }} USDT</strong></p>
-            <p id="performance" class="positive">📈 Performance : +0.00%</p>
-            <canvas id="performanceChart" width="400" height="200"></canvas>
+                <p id="solde">Solde actuel : <strong>{{ balance }} USDT</strong></p>
+                <p id="performance" class="positive">Performance : +0.00%</p>
+                <canvas id="performanceChart" width="400" height="200"></canvas>
             {% else %}
-            <p class="warning">⚠️ Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
+                <p>Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
             {% endif %}
-        </section>
-        {% endif %}
-    </main>
-
-    {% if not is_admin and balance > 0 %}
-    <script>
-        const labels = [...Array(20)].map((_, i) => `-${19 - i}`);
-        const initialBalance = {{ balance }};
-        let data = [initialBalance];
-        const chart = new Chart(document.getElementById('performanceChart'), {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Évolution du solde',
-                    data: data,
-                    borderColor: '#00c896',
-                    backgroundColor: 'rgba(0, 200, 150, 0.2)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                animation: false,
-                scales: {
-                    y: { beginAtZero: false }
-                }
-            }
-        });
-
-        function updateChart() {
-            let last = data[data.length - 1];
-            let variation = last * (Math.random() * 0.01 - 0.005);
-            let newVal = +(last + variation).toFixed(2);
-            data.push(newVal);
-            if (data.length > 20) data.shift();
-            chart.data.datasets[0].data = data;
-            chart.update();
-
-            const performance = ((newVal - initialBalance) / initialBalance * 100).toFixed(2);
-            const perfEl = document.getElementById('performance');
-            const soldeEl = document.getElementById('solde');
-
-            soldeEl.innerHTML = `💰 Solde actuel : <strong>${newVal.toFixed(2)} USDT</strong>`;
-            perfEl.textContent = `📈 Performance : ${performance > 0 ? '+' : ''}${performance}%`;
-            perfEl.className = performance >= 0 ? 'positive' : 'negative';
-        }
-
-        setInterval(updateChart, 3000);
-    </script>
+        </div>
     {% endif %}
+</div>
+
+{% if not is_admin and balance > 0 %}
+<script>
+    const labels = [...Array(20)].map((_, i) => `-${19 - i}`);
+    const initialBalance = {{ balance }};
+    let data = [initialBalance];
+    const chart = new Chart(document.getElementById('performanceChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Évolution du solde💸',
+                data: data,
+                borderColor: 'rgb(46, 204, 113)',
+                backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            animation: false,
+            scales: {
+                y: { beginAtZero: false }
+            }
+        }
+    });
+
+    function updateChart() {
+        let last = data[data.length - 1];
+        let variation = last * (Math.random() * 0.01 - 0.005); // entre -0.5% et +0.5%
+        let newVal = +(last + variation).toFixed(2);
+        data.push(newVal);
+        if (data.length > 20) data.shift();
+        chart.data.datasets[0].data = data;
+        chart.update();
+
+        const performance = ((newVal - initialBalance) / initialBalance * 100).toFixed(2);
+        const perfEl = document.getElementById('performance');
+        const soldeEl = document.getElementById('solde');
+
+        soldeEl.innerHTML = `💰 Solde actuel : <strong>${newVal.toFixed(2)} USDT</strong>`;
+        perfEl.textContent = `📈 Performance : ${performance > 0 ? '+' : ''}${performance}%`;
+        perfEl.className = performance >= 0 ? 'positive' : 'negative';
+    }
+
+    setInterval(updateChart, 3000); // toutes les 3 secondes
+</script>
+{% endif %}
 </body>
 </html>
