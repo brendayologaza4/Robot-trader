@@ -2,17 +2,104 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Bienvenue sur le Robot Trader</title>
+    <title>Bienvenue sur le Robot Trader IA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <!-- Custom Style -->
+    <style>
+        body {
+            background-color: #0f172a;
+            font-family: 'Poppins', sans-serif;
+            color: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 600;
+            color: #facc15;
+            margin-bottom: 20px;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: #cbd5e1;
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        .hero-buttons a {
+            padding: 14px 30px;
+            font-size: 18px;
+            font-weight: 500;
+            border-radius: 8px;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-warning {
+            background-color: #f59e0b;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-warning:hover {
+            background-color: #d97706;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 34px;
+            }
+
+            .hero-subtitle {
+                font-size: 16px;
+            }
+
+            .hero-buttons a {
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
 </head>
-<body class="bg-dark text-light">
-    <div class="container text-center mt-5">
-        <h1 class="mb-4">🤖 Bienvenue sur votre Robot Trader IA</h1>
-        <p class="lead">Connectez-vous ou créez un compte pour commencer à trader automatiquement avec votre bot intelligent.</p>
-        <div class="mt-4">
-            <a href="/login" class="btn btn-warning btn-lg me-3">Connexion</a>
-            <a href="/register" class="btn btn-success btn-lg">Inscription</a>
-        </div>
+<body>
+
+<div class="hero-section">
+    <h1 class="hero-title">🤖 Bienvenue sur Robot Trader IA</h1>
+    <p class="hero-subtitle">
+        Automatisez vos investissements en toute sécurité avec notre intelligence artificielle de trading puissante, rapide et intuitive.
+    </p>
+    <div class="hero-buttons">
+        <a href="/login" class="btn btn-warning">Connexion</a>
+        <a href="/register" class="btn btn-success">Inscription</a>
     </div>
+</div>
+
 </body>
-</html>
+</html>p
