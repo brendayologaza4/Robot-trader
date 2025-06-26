@@ -145,8 +145,18 @@ def user_profile(username):
     if not target_user:
         return render_template('404.html'), 404
 
-    return render_template("user_profile.html", user=target_user)
+    # Simulation des données comme pour l’interface client
+    balance = target_user.get('balance', 0)
+    fake_growth = [round(balance * (1 + np.random.uniform(-0.02, 0.05)), 2) for _ in range(10)]
+    dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%d-%m') for i in reversed(range(10))]
+    performance = round(fake_growth[-1] - fake_growth[0], 2)
 
+    return render_template("user_profile.html",
+                           username=target_user['username'],
+                           balance=balance,
+                           chart_labels=dates,
+                           chart_data=fake_growth,
+                           performance=performance)
 # --- Lancer app ---
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
