@@ -5,7 +5,109 @@
     <title>Robot Trader - Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f1116;
+            margin: 0;
+            padding: 0;
+            color: #e0e0e0;
+        }
+        header {
+            background: #1a1d24;
+            color: #00ff9d;
+            padding: 1rem 2rem;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logout-btn {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: auto;
+        }
+        .card {
+            background: #1a1d24;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,255,157,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            color: #00ff9d;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #2b2e36;
+        }
+        th {
+            background-color: #2b2e36;
+            color: #00ff9d;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #111;
+            color: #fff;
+        }
+        button {
+            background-color: #00ff9d;
+            color: #000;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #00e68c;
+        }
+        .positive {
+            color: #00ff9d;
+            font-weight: bold;
+        }
+        .negative {
+            color: #ff4d4f;
+            font-weight: bold;
+        }
+        canvas {
+            margin-top: 1rem;
+            background-color: #101317;
+            border: 1px solid #222;
+            border-radius: 5px;
+        }
+        a button {
+            background-color: #444;
+            color: #eee;
+        }
+        a button:hover {
+            background-color: #666;
+        }
+        @media (max-width: 768px) {
+            body { font-size: 0.95rem; }
+            .container { padding: 1rem; }
+            th, td { font-size: 0.9rem; }
+            .logout-btn { padding: 6px 10px; font-size: 0.9rem; }
+        }
+    </style>
 </head>
 <body>
 
@@ -26,6 +128,7 @@
                         <th>Solde (USDT)</th>
                         <th>Nouveau solde</th>
                         <th>Action</th>
+                        <th>Voir Profil</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,6 +142,11 @@
                                 <input type="number" step="0.01" name="new_balance" required>
                             </td>
                             <td><button type="submit">Modifier</button></td>
+                            <td>
+                                <a href="{{ url_for('user_profile', username=user.username) }}">
+                                    <button type="button">Voir</button>
+                                </a>
+                            </td>
                         </form>
                     </tr>
                     {% endfor %}
@@ -92,8 +200,8 @@
             datasets: [{
                 label: 'Évolution du solde',
                 data: data,
-                borderColor: '#00cc99',
-                backgroundColor: 'rgba(0, 204, 153, 0.2)',
+                borderColor: '#00ff9d',
+                backgroundColor: 'rgba(0,255,157,0.1)',
                 fill: true,
                 tension: 0.3
             }]
@@ -101,7 +209,11 @@
         options: {
             animation: false,
             scales: {
-                y: { beginAtZero: false }
+                y: { beginAtZero: false },
+                x: { ticks: { color: "#888" } }
+            },
+            plugins: {
+                legend: { labels: { color: "#ccc" } }
             }
         }
     });
@@ -127,5 +239,6 @@
     setInterval(updateChart, 3000);
 </script>
 {% endif %}
+
 </body>
 </html>
