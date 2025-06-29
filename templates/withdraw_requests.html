@@ -1,111 +1,189 @@
-<!DOCTYPE html>
+
+            <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Demandes de Retrait - Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f1116;
-            color: #e0e0e0;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: #1a1d24;
-            color: #00ff9d;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.5rem;
-        }
-        .logout-btn {
-            background-color: #ff4d4f;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 3rem auto;
-            padding: 2rem;
-            background: #1a1d24;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,255,157,0.1);
-        }
-        h2 {
-            color: #00ff9d;
-            margin-bottom: 1.5rem;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        th, td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #2b2e36;
-            text-align: left;
-        }
-        th {
-            background-color: #2b2e36;
-            color: #00ff9d;
-        }
-        button {
-            background-color: #00ff9d;
-            color: #000;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #00e68c;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Demandes de retrait - Admin</title>
+  <style>
+    /* Style sombre général */
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #1f1f1f;
+      padding: 20px 40px;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #bb86fc;
+      letter-spacing: 1px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+    }
+
+    main {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px 40px 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 0 10px rgba(187, 134, 252, 0.3);
+      background-color: #1e1e1e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #333;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background-color: #2c2c2c;
+      color: #bb86fc;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    tr:hover {
+      background-color: #333333;
+    }
+
+    /* Boutons d'action */
+    form {
+      display: inline;
+    }
+
+    button {
+      background-color: #bb86fc;
+      border: none;
+      color: #121212;
+      padding: 6px 12px;
+      margin: 0 5px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #9a67ea;
+    }
+
+    /* Statut des demandes */
+    .status-en-attente {
+      color: #fbc02d;
+      font-weight: 600;
+    }
+
+    .status-traite {
+      color: #4caf50;
+      font-weight: 600;
+    }
+
+    .status-rejete {
+      color: #e53935;
+      font-weight: 600;
+    }
+
+    /* Info complémentaire */
+    .mode-info {
+      font-size: 0.85rem;
+      color: #ccc;
+      margin-top: 6px;
+    }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      th, td {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
+
+      button {
+        padding: 5px 8px;
+        font-size: 0.85rem;
+      }
+    }
+  </style>
 </head>
 <body>
+  <header>
+    Demandes de retrait - Tableau de bord Admin
+  </header>
 
-<header>
-    Demandes de Retrait
-    <a href="{{ url_for('logout') }}"><button class="logout-btn">Déconnexion</button></a>
-</header>
-
-<div class="container">
-    <h2>Liste des demandes</h2>
-
-    {% if withdraw_requests %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Utilisateur</th>
-                    <th>Montant (USDT)</th>
-                    <th>Adresse portefeuille</th>
-                    <th>Date</th>
-                    <th>Statut</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for req in withdraw_requests %}
-                <tr>
-                    <td>{{ req.username }}</td>
-                    <td>{{ req.amount }}</td>
-                    <td>{{ req.wallet_address }}</td>
-                    <td>{{ req.date }}</td>
-                    <td>{{ req.status }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  <main>
+    {% if requests|length == 0 %}
+      <p>Aucune demande de retrait pour le moment.</p>
     {% else %}
-        <p>Aucune demande de retrait en attente.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Utilisateur</th>
+            <th>Montant (€)</th>
+            <th>Mode</th>
+            <th>Détails</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in requests %}
+          <tr>
+            <td>{{ req.username }}</td>
+            <td>{{ '%.2f'|format(req.amount) }}</td>
+            <td>{{ req.mode }}</td>
+            <td>
+              {% if req.mode == 'Carte bancaire' %}
+                <div class="mode-info">
+                  N° carte : **** **** **** {{ req.card_number[-4:] }}<br />
+                  Expiration : {{ req.card_expiry }}
+                </div>
+              {% elif req.mode == 'Compte bancaire' %}
+                <div class="mode-info">
+                  IBAN : {{ req.iban }}<br />
+                  Banque : {{ req.bank_name }}<br />
+                  Titulaire : {{ req.account_holder }}
+                </div>
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+            <td>{{ req.date.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td class="status-{{ req.status|lower().replace(' ', '-') }}">
+              {{ req.status }}
+            </td>
+            <td>
+              {% if req.status == 'En attente' %}
+              <form method="post" action="{{ url_for('process_withdrawal', request_id=req._id) }}">
+                <input type="hidden" name="action" value="accept" />
+                <button type="submit" title="Accepter">✔</button>
+              </form>
+              <form method="post" action="{{ url_for('process_withdrawal', request_id=req._id) }}">
+                <input type="hidden" name="action" value="reject" />
+                <button type="submit" title="Rejeter">✖</button>
+              </form>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     {% endif %}
-</div>
-
+  </main>
 </body>
 </html>
