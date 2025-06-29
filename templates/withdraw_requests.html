@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Demandes de Retrait - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f1116;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #1a1d24;
+            color: #00ff9d;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.5rem;
+        }
+        .logout-btn {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: #1a1d24;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,255,157,0.1);
+        }
+        h2 {
+            color: #00ff9d;
+            margin-bottom: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #2b2e36;
+            text-align: left;
+        }
+        th {
+            background-color: #2b2e36;
+            color: #00ff9d;
+        }
+        button {
+            background-color: #00ff9d;
+            color: #000;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #00e68c;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    Demandes de Retrait
+    <a href="{{ url_for('logout') }}"><button class="logout-btn">Déconnexion</button></a>
+</header>
+
+<div class="container">
+    <h2>Liste des demandes</h2>
+
+    {% if withdraw_requests %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Montant (USDT)</th>
+                    <th>Adresse portefeuille</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in withdraw_requests %}
+                <tr>
+                    <td>{{ req.username }}</td>
+                    <td>{{ req.amount }}</td>
+                    <td>{{ req.wallet_address }}</td>
+                    <td>{{ req.date }}</td>
+                    <td>{{ req.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune demande de retrait en attente.</p>
+    {% endif %}
+</div>
+
+</body>
+</html>
