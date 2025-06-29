@@ -1,85 +1,132 @@
 
+<!-- templates/withdraw.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <title>Demande de Retrait - Robot Trader</title>
+    <title>Retrait - Robot Trader</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Chart.js (pour cohérence même si non utilisé ici) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
         * { box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0d1117, #1a1d24);
-            color: #e0e0e0;
-            margin: 0; padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f051d, #1a1a40);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
         }
+
         header {
-            background: #1a1d24;
-            color: #00ff9d;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            font-family: 'Orbitron', sans-serif;
             font-size: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0,255,157,0.1);
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(90deg, #facc15, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .logout-btn {
-            background-color: #ff4d4f;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
+
+        .menu-icon {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
             cursor: pointer;
         }
+
+        .bar {
+            width: 25px;
+            height: 3px;
+            background-color: #fff;
+            margin: 5px 0;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #1a1a40;
+            transition: left 0.3s ease;
+            z-index: 999;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+        }
+
         .container {
-            max-width: 650px;
-            margin: 3rem auto;
+            max-width: 700px;
+            margin: 60px auto;
             padding: 2rem;
-            background: #1a1d24;
+            background-color: #1e1e2f;
             border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0,255,157,0.15);
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.2);
         }
+
         h2 {
-            color: #00ff9d;
-            margin-bottom: 1.5rem;
+            font-family: 'Orbitron', sans-serif;
             text-align: center;
+            margin-bottom: 2rem;
+            color: #facc15;
         }
+
         label {
             display: block;
             margin-top: 1.2rem;
             margin-bottom: 0.5rem;
             font-weight: bold;
         }
+
         input, select {
             width: 100%;
             padding: 10px;
             border-radius: 6px;
-            border: 1px solid #333;
+            border: none;
             background: #0f1116;
             color: #fff;
             font-size: 1rem;
         }
+
         button {
             margin-top: 2rem;
             width: 100%;
             padding: 12px;
-            background-color: #00ff9d;
+            background: linear-gradient(90deg, #9333ea, #3b82f6);
             border: none;
-            border-radius: 6px;
+            border-radius: 20px;
             font-size: 1rem;
-            color: #000;
+            color: #fff;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
         }
+
         button:hover {
-            background-color: #00cc80;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
         }
+
         .message {
             margin-top: 1rem;
             text-align: center;
             font-weight: bold;
         }
+
         .success { color: #00ff9d; }
         .error { color: #ff4d4f; }
         .info {
@@ -91,15 +138,24 @@
             padding: 10px;
             border-radius: 5px;
         }
+
         @media (max-width: 600px) {
             .container {
                 margin: 1rem;
                 padding: 1.5rem;
             }
+
+            header {
+                font-size: 1.2rem;
+            }
+
+            input, select, button {
+                font-size: 0.9rem;
+            }
         }
     </style>
+
     <script>
-        // Variable injectée depuis Flask : true/false si IBAN dispo
         let ibanEnabled = {{ iban_enabled | lower }};
 
         function toggleWithdrawalType() {
@@ -125,15 +181,28 @@
             }
         }
 
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            sidebar.style.left = sidebar.style.left === "0px" ? "-250px" : "0px";
+        }
+
         window.onload = toggleWithdrawalType;
     </script>
 </head>
 <body>
 
-<header>
-    Demande de Retrait
-    <a href="{{ url_for('logout') }}"><button class="logout-btn">Déconnexion</button></a>
-</header>
+<div class="menu-icon" onclick="toggleSidebar()">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <a href="{{ url_for('dashboard') }}">📊 Tableau de bord</a>
+    <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
+</div>
+
+<header>Demande de Retrait</header>
 
 <div class="container">
     <h2>Formulaire de Retrait</h2>
