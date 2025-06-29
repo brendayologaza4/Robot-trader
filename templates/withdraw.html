@@ -6,13 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * { box-sizing: border-box; }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f1116;
+            background: linear-gradient(135deg, #0d1117, #1a1d24);
             color: #e0e0e0;
             margin: 0;
             padding: 0;
         }
+
         header {
             background: #1a1d24;
             color: #00ff9d;
@@ -21,7 +23,9 @@
             justify-content: space-between;
             align-items: center;
             font-size: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,255,157,0.1);
         }
+
         .logout-btn {
             background-color: #ff4d4f;
             color: white;
@@ -30,65 +34,95 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         .container {
-            max-width: 600px;
+            max-width: 650px;
             margin: 3rem auto;
             padding: 2rem;
             background: #1a1d24;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,255,157,0.1);
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,255,157,0.15);
         }
+
         h2 {
             color: #00ff9d;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
         }
+
         label {
             display: block;
-            margin-top: 1rem;
+            margin-top: 1.2rem;
             margin-bottom: 0.5rem;
+            font-weight: bold;
         }
+
         input, select {
             width: 100%;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 6px;
             border: 1px solid #333;
-            background: #111;
+            background: #0f1116;
             color: #fff;
+            font-size: 1rem;
         }
+
         button {
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             width: 100%;
             padding: 12px;
             background-color: #00ff9d;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 1rem;
             color: #000;
+            font-weight: bold;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
+
+        button:hover {
+            background-color: #00cc80;
+        }
+
         .message {
             margin-top: 1rem;
             text-align: center;
+            font-weight: bold;
         }
+
         .success { color: #00ff9d; }
         .error { color: #ff4d4f; }
-        .info { color: #ffa500; margin-top: 1rem; font-weight: bold; text-align: center; }
+        .info { 
+            color: #ffa500; 
+            margin-top: 1rem; 
+            font-weight: bold; 
+            text-align: center; 
+            background: rgba(255,165,0,0.1);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
     </style>
 
     <script>
-        // Variable injectée depuis Flask : true ou false
         let ibanEnabled = {{ iban_enabled | lower }};
 
         function toggleWithdrawalType() {
             const type = document.getElementById("withdraw_type").value;
             const submitBtn = document.querySelector('button[type="submit"]');
 
-            // Affiche/masque les sections selon la méthode choisie
             document.getElementById("card_section").style.display = (type === "carte") ? "block" : "none";
             document.getElementById("iban_section").style.display = (type === "iban") ? "block" : "none";
             document.getElementById("id_bancaire_section").style.display = (type === "identification_bancaire") ? "block" : "none";
 
-            // Affichage du message IBAN si désactivé
             const ibanAlert = document.getElementById("iban_alert");
             if (type === "iban") {
                 if (!ibanEnabled) {
@@ -115,7 +149,7 @@
 </header>
 
 <div class="container">
-    <h2>Retirer des fonds</h2>
+    <h2>Formulaire de Retrait</h2>
     <form method="POST">
         <label for="amount">Montant à retirer (USDT) :</label>
         <input type="number" name="amount" id="amount" min="1" step="0.01" required>
@@ -128,7 +162,7 @@
             <option value="identification_bancaire">Identification bancaire</option>
         </select>
 
-        <!-- Section carte bancaire -->
+        <!-- Carte bancaire -->
         <div id="card_section" style="display:none;">
             <label for="card_number">Numéro de carte :</label>
             <input type="text" name="card_number" id="card_number">
@@ -143,7 +177,7 @@
             <input type="text" name="card_cvc" id="card_cvc">
         </div>
 
-        <!-- Section IBAN -->
+        <!-- IBAN -->
         <div id="iban_section" style="display:none;">
             <p id="iban_alert" class="info" style="display:none;">
                 ⚠️ Le mode de retrait par virement IBAN est momentanément indisponible.
@@ -155,7 +189,7 @@
             <input type="text" name="bank_name" id="bank_name">
         </div>
 
-        <!-- Section Identification bancaire -->
+        <!-- Identification bancaire -->
         <div id="id_bancaire_section" style="display:none;">
             <label for="bank_name_id">Nom de la banque :</label>
             <input type="text" name="bank_name_id" id="bank_name_id" required>
