@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import os
 import re
+import random
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'cle_secrete_par_defaut')
@@ -14,12 +15,11 @@ app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://localhost:27017/robo
 mongo = PyMongo(app)
 db = mongo.db
 
-# Helpers
+# =============== HELPERS ===============
 def current_user():
-    username = session.get('username')
-    if not username:
-        return None
-    return db.users.find_one({"username": username})
+    if 'username' in session:
+        return db.users.find_one({'username': session['username']})
+    return None
 
 def is_logged_in():
     return 'username' in session
@@ -32,12 +32,12 @@ def is_client():
     user = current_user()
     return user and user.get('role') == 'client'
 
-# Routes
+# =============== ROUTES ===============
+
 @app.route('/')
 def index():
-    if is_logged_in():
-        return redirect(url_for('dashboard'))
-    return render_template('index.html')
+    return redirect(url_for('dashboard')) if is_logged_in() else render_template('index.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -50,34 +50,35 @@ def register():
             flash("Veuillez remplir tous les champs.", "error")
             return render_template('register.html')
 
-        if db.users.find_one({"username": username}):
+        if db.users.find_one({'username': username}):
             flash("Nom d'utilisateur déjà pris.", "error")
             return render_template('register.html')
 
         role = 'admin' if code_admin == '0404' else 'client'
-        hashed = generate_password_hash(password)
+        hashed_password = generate_password_hash(password)
 
         db.users.insert_one({
-            "username": username,
-            "password": hashed,
-            "role": role,
-            "balance": 0,
-            "benefit": 0,
-            "api_key": "",
-            "api_secret": ""
+            'username': username,
+            'password': hashed_password,
+            'role': role,
+            'balance': 0,
+            'benefit': 0,
+            'api_key': '',
+            'api_secret': ''
         })
 
-        flash("Inscription réussie, connectez-vous.", "success")
+        flash("Inscription réussie ! Connectez-vous.", "success")
         return redirect(url_for('login'))
 
     return render_template('register.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
-        user = db.users.find_one({"username": username})
+        user = db.users.find_one({'username': username})
 
         if user and check_password_hash(user['password'], password):
             session['username'] = user['username']
@@ -88,11 +89,13 @@ def login():
 
     return render_template('login.html')
 
+
 @app.route('/logout')
 def logout():
     session.clear()
     flash("Déconnecté.", "info")
     return redirect(url_for('login'))
+
 
 @app.route('/dashboard')
 def dashboard():
@@ -100,25 +103,31 @@ def dashboard():
         return redirect(url_for('login'))
 
     user = current_user()
-    if user and user.get('role') == 'admin':
-        clients = list(db.users.find({"role": "client"}))
-        return render_template('dashboard.html', is_admin=True, users=clients, admin=user)
-    elif user and user.get('role') == 'client':
+
+    if user['role'] == 'admin':
+        clients = list(db.users.find({'role': 'client'}))
+        return render_template('dashboard.html', is_admin=True, admin=user, users=clients)
+
+    elif user['role'] == 'client':
         balance = user.get('balance', 0)
-        from random import uniform
-        chart_data = [round(balance * (1 + uniform(-0.02, 0.05)), 2) for _ in range(10)]
         chart_labels = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%d-%m') for i in reversed(range(10))]
+        chart_data = [round(balance * (1 + random.uniform(-0.02, 0.05)), 2) for _ in range(10)]
         performance = round(chart_data[-1] - chart_data[0], 2)
+
         return render_template('dashboard.html',
                                is_admin=False,
-                               username=user.get('username'),
+                               username=user['username'],
                                balance=balance,
                                chart_labels=chart_labels,
                                chart_data=chart_data,
                                performance=performance)
+
     else:
         flash("Session invalide.", "error")
         return redirect(url_for('logout'))
+
+
+# Tu peux rajouter ici les routes `/deposit`, `/withdraw`, etc. déjà en place
 
 @app.route('/withdraw', methods=['GET', 'POST'])
 def withdraw():
