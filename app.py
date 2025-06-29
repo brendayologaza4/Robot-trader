@@ -96,6 +96,7 @@ def dashboard():
         clients = list(db.users.find({"role": "client"}))
         return render_template('dashboard.html', is_admin=True, users=clients, admin=user)
     else:
+        # Données simulées pour le client
         balance = user.get('balance', 0)
         from random import uniform
         chart_data = [round(balance * (1 + uniform(-0.02, 0.05)), 2) for _ in range(10)]
@@ -182,22 +183,14 @@ def withdraw():
             })
 
         elif withdraw_type == 'identification_bancaire':
-            bank_name_id = request.form.get('bank_name_id', '').strip()
-            bank_identifiers = request.form.get('bank_identifiers', '').strip()
-            bank_code_id = request.form.get('bank_code_id', '').strip()
-            if not all([bank_name_id, bank_identifiers, bank_code_id]):
-                flash("Veuillez remplir tous les champs d'identification bancaire.", "error")
+            bank_name = request.form.get('bank_name', '').strip()
+            account_number = request.form.get('account_number', '').strip()
+            if not bank_name or not account_number:
+                flash("Veuillez remplir tous les champs bancaires.", "error")
                 return render_template('withdraw.html', iban_enabled=iban_enabled)
-
-            # Exemple de pattern de validation : identifiants bancaires numériques
-            if not re.fullmatch(r"[A-Z0-9]{5,34}", bank_identifiers):
-                flash("Identifiants bancaires invalides (format attendu : 5 à 34 caractères alphanumériques).", "error")
-                return render_template('withdraw.html', iban_enabled=iban_enabled)
-
             withdrawal.update({
-                'bank_name_id': bank_name_id,
-                'bank_identifiers': bank_identifiers,
-                'bank_code_id': bank_code_id
+                'bank_name': bank_name,
+                'account_number': account_number
             })
 
         db.withdrawals.insert_one(withdrawal)
