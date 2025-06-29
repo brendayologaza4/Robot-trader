@@ -14,15 +14,63 @@
             padding: 0;
             color: #e0e0e0;
         }
+
+        .menu-icon {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 22px;
+        }
+
+        .menu-icon .bar {
+            height: 4px;
+            width: 100%;
+            background-color: #00ff9d;
+            border-radius: 2px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 220px;
+            height: 100%;
+            background: #1a1d24;
+            padding-top: 60px;
+            transition: left 0.3s ease;
+            z-index: 999;
+            box-shadow: 2px 0 10px rgba(0,255,157,0.2);
+        }
+
+        .sidebar a {
+            display: block;
+            color: #e0e0e0;
+            padding: 15px 20px;
+            text-decoration: none;
+            border-bottom: 1px solid #2b2e36;
+        }
+
+        .sidebar a:hover {
+            background: #00ff9d;
+            color: #000;
+        }
+
         header {
             background: #1a1d24;
             color: #00ff9d;
             padding: 1rem 2rem;
             font-size: 1.5rem;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
         }
+
         .logout-btn {
             background-color: #ff4d4f;
             color: white;
@@ -32,11 +80,13 @@
             cursor: pointer;
             border-radius: 5px;
         }
+
         .container {
             padding: 2rem;
             max-width: 1200px;
             margin: auto;
         }
+
         .card {
             background: #1a1d24;
             border-radius: 10px;
@@ -44,24 +94,29 @@
             padding: 2rem;
             margin-bottom: 2rem;
         }
+
         h2 {
             color: #00ff9d;
             margin-bottom: 1rem;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
         }
+
         th, td {
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #2b2e36;
         }
+
         th {
             background-color: #2b2e36;
             color: #00ff9d;
         }
+
         input[type="number"] {
             width: 100%;
             padding: 6px;
@@ -70,6 +125,7 @@
             background: #111;
             color: #fff;
         }
+
         button {
             background-color: #00ff9d;
             color: #000;
@@ -78,30 +134,37 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         button:hover {
             background-color: #00e68c;
         }
+
         .positive {
             color: #00ff9d;
             font-weight: bold;
         }
+
         .negative {
             color: #ff4d4f;
             font-weight: bold;
         }
+
         canvas {
             margin-top: 1rem;
             background-color: #101317;
             border: 1px solid #222;
             border-radius: 5px;
         }
+
         a button {
             background-color: #444;
             color: #eee;
         }
+
         a button:hover {
             background-color: #666;
         }
+
         @media (max-width: 768px) {
             body { font-size: 0.95rem; }
             .container { padding: 1rem; }
@@ -112,9 +175,19 @@
 </head>
 <body>
 
+<div class="menu-icon" onclick="toggleSidebar()">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <a href="{{ url_for('withdraw') }}">💳 Retrait</a>
+    <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
+</div>
+
 <header>
-    Dashboard Robot Trader
-    <a href="{{ url_for('logout') }}"><button class="logout-btn">Déconnexion</button></a>
+    <span>Dashboard Robot Trader</span>
 </header>
 
 <div class="container">
@@ -200,7 +273,7 @@
         data: {
             labels: labels,
             datasets: [{
-                label: 'Évolution simulée',
+                label: 'Évolution de la valeur d\'action',
                 data: data,
                 borderColor: '#00ff9d',
                 backgroundColor: 'rgba(0,255,157,0.1)',
@@ -242,6 +315,13 @@
     setInterval(updateChart, 3000);
 </script>
 {% endif %}
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.style.left = sidebar.style.left === '0px' ? '-250px' : '0px';
+    }
+</script>
 
 </body>
 </html>
