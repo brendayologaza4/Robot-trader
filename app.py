@@ -33,7 +33,6 @@ def is_client():
     return user and user.get('role') == 'client'
 
 # Routes
-
 @app.route('/')
 def index():
     if is_logged_in():
@@ -46,14 +45,18 @@ def register():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
         code_admin = request.form.get('code_admin', '')
+
         if not username or not password:
             flash("Veuillez remplir tous les champs.", "error")
             return render_template('register.html')
+
         if db.users.find_one({"username": username}):
             flash("Nom d'utilisateur déjà pris.", "error")
             return render_template('register.html')
+
         role = 'admin' if code_admin == '0404' else 'client'
         hashed = generate_password_hash(password)
+
         db.users.insert_one({
             "username": username,
             "password": hashed,
@@ -63,8 +66,10 @@ def register():
             "api_key": "",
             "api_secret": ""
         })
+
         flash("Inscription réussie, connectez-vous.", "success")
         return redirect(url_for('login'))
+
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -73,12 +78,14 @@ def login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
         user = db.users.find_one({"username": username})
+
         if user and check_password_hash(user['password'], password):
             session['username'] = user['username']
             flash(f"Bienvenue {user['username']} !", "success")
             return redirect(url_for('dashboard'))
         else:
             flash("Identifiants invalides.", "error")
+
     return render_template('login.html')
 
 @app.route('/logout')
@@ -91,11 +98,12 @@ def logout():
 def dashboard():
     if not is_logged_in():
         return redirect(url_for('login'))
+
     user = current_user()
-    if user['role'] == 'admin':
+    if user and user.get('role') == 'admin':
         clients = list(db.users.find({"role": "client"}))
         return render_template('dashboard.html', is_admin=True, users=clients, admin=user)
-    else:
+    elif user and user.get('role') == 'client':
         balance = user.get('balance', 0)
         from random import uniform
         chart_data = [round(balance * (1 + uniform(-0.02, 0.05)), 2) for _ in range(10)]
@@ -103,19 +111,23 @@ def dashboard():
         performance = round(chart_data[-1] - chart_data[0], 2)
         return render_template('dashboard.html',
                                is_admin=False,
-                               username=user['username'],
+                               username=user.get('username'),
                                balance=balance,
                                chart_labels=chart_labels,
                                chart_data=chart_data,
                                performance=performance)
+    else:
+        flash("Session invalide.", "error")
+        return redirect(url_for('logout'))
 
 @app.route('/withdraw', methods=['GET', 'POST'])
 def withdraw():
     if not is_logged_in():
         flash("Connectez-vous d'abord.", "error")
         return redirect(url_for('login'))
+
     user = current_user()
-    if user['role'] != 'client':
+    if not user or user.get('role') != 'client':
         return "Accès refusé.", 403
 
     iban_enabled = False
@@ -146,7 +158,7 @@ def withdraw():
 
         withdrawal = {
             'user_id': user['_id'],
-            'username': user['username'],
+            'username': user.get('username'),
             'amount': amount,
             'withdraw_type': withdraw_type,
             'status': 'En attente',
@@ -213,7 +225,7 @@ def deposit():
         return redirect(url_for('login'))
 
     user = current_user()
-    if not user or user['role'] != 'client':
+    if not user or user.get('role') != 'client':
         return "Accès refusé.", 403
 
     if request.method == 'POST':
@@ -256,7 +268,7 @@ def process_withdraw(withdraw_id, action):
         flash("Demande introuvable.", "error")
         return redirect(url_for('withdraw_requests'))
 
-    if withdrawal['status'] != 'En attente':
+    if withdrawal.get('status') != 'En attente':
         flash("Cette demande a déjà été traitée.", "info")
         return redirect(url_for('withdraw_requests'))
 
