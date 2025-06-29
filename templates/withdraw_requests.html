@@ -1,12 +1,10 @@
-
-            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Demandes de retrait - Admin</title>
   <style>
-    /* Style sombre général */
     body {
       background-color: #121212;
       color: #e0e0e0;
@@ -18,16 +16,27 @@
     header {
       background-color: #1f1f1f;
       padding: 20px 40px;
-      text-align: center;
-      font-size: 1.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.5rem;
       font-weight: 700;
       color: #bb86fc;
-      letter-spacing: 1px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.8);
     }
 
+    .logout-btn {
+      background-color: #ff4d4f;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
     main {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 30px auto;
       padding: 0 20px 40px 20px;
     }
@@ -60,7 +69,6 @@
       background-color: #333333;
     }
 
-    /* Boutons d'action */
     form {
       display: inline;
     }
@@ -81,7 +89,6 @@
       background-color: #9a67ea;
     }
 
-    /* Statut des demandes */
     .status-en-attente {
       color: #fbc02d;
       font-weight: 600;
@@ -97,14 +104,13 @@
       font-weight: 600;
     }
 
-    /* Info complémentaire */
     .mode-info {
       font-size: 0.85rem;
       color: #ccc;
       margin-top: 6px;
+      line-height: 1.4;
     }
 
-    /* Responsive */
     @media (max-width: 700px) {
       th, td {
         padding: 8px 10px;
@@ -115,12 +121,22 @@
         padding: 5px 8px;
         font-size: 0.85rem;
       }
+
+      header {
+        flex-direction: column;
+        font-size: 1.2rem;
+      }
+
+      .logout-btn {
+        margin-top: 10px;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    Demandes de retrait - Tableau de bord Admin
+    <span>Demandes de retrait - Admin</span>
+    <a href="{{ url_for('logout') }}"><button class="logout-btn">Déconnexion</button></a>
   </header>
 
   <main>
@@ -131,7 +147,7 @@
         <thead>
           <tr>
             <th>Utilisateur</th>
-            <th>Montant (€)</th>
+            <th>Montant (USDT)</th>
             <th>Mode</th>
             <th>Détails</th>
             <th>Date</th>
@@ -149,13 +165,19 @@
               {% if req.mode == 'Carte bancaire' %}
                 <div class="mode-info">
                   N° carte : **** **** **** {{ req.card_number[-4:] }}<br />
-                  Expiration : {{ req.card_expiry }}
+                  Expiration : {{ req.card_expiry }}<br />
+                  Titulaire : {{ req.card_name }}
                 </div>
-              {% elif req.mode == 'Compte bancaire' %}
+              {% elif req.mode == 'Virement bancaire' %}
                 <div class="mode-info">
                   IBAN : {{ req.iban }}<br />
+                  Banque : {{ req.bank_name }}
+                </div>
+              {% elif req.mode == 'Identification bancaire' %}
+                <div class="mode-info">
                   Banque : {{ req.bank_name }}<br />
-                  Titulaire : {{ req.account_holder }}
+                  Code ID : {{ req.bank_code }}<br />
+                  App ID : {{ req.bank_app_id }}
                 </div>
               {% else %}
                 N/A
