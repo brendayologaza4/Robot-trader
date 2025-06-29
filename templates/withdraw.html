@@ -5,6 +5,7 @@
     <title>Demande de Retrait - Robot Trader</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /* (Styles inchangés, ajout juste de section masquée pour carte/IBAN) */
         * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -66,9 +67,6 @@
             color: #000;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #00e68c;
-        }
         .message {
             margin-top: 1rem;
             text-align: center;
@@ -76,6 +74,13 @@
         .success { color: #00ff9d; }
         .error { color: #ff4d4f; }
     </style>
+    <script>
+        function toggleWithdrawalType() {
+            const type = document.getElementById("withdraw_type").value;
+            document.getElementById("card_section").style.display = type === "carte" ? "block" : "none";
+            document.getElementById("iban_section").style.display = type === "iban" ? "block" : "none";
+        }
+    </script>
 </head>
 <body>
 
@@ -90,8 +95,36 @@
         <label for="amount">Montant à retirer (USDT) :</label>
         <input type="number" name="amount" id="amount" min="1" step="0.01" required>
 
-        <label for="wallet_address">Adresse du portefeuille (USDT - TRC20 de préférence) :</label>
-        <input type="text" name="wallet_address" id="wallet_address" required>
+        <label for="withdraw_type">Méthode de retrait :</label>
+        <select name="withdraw_type" id="withdraw_type" onchange="toggleWithdrawalType()" required>
+            <option value="">-- Choisissez une méthode --</option>
+            <option value="carte">Carte bancaire</option>
+            <option value="iban">Virement bancaire (IBAN)</option>
+        </select>
+
+        <!-- Section carte bancaire -->
+        <div id="card_section" style="display:none;">
+            <label for="card_number">Numéro de carte :</label>
+            <input type="text" name="card_number" id="card_number">
+
+            <label for="card_name">Nom sur la carte :</label>
+            <input type="text" name="card_name" id="card_name">
+
+            <label for="card_expiry">Date d'expiration :</label>
+            <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/AA">
+
+            <label for="card_cvc">Code CVC :</label>
+            <input type="text" name="card_cvc" id="card_cvc">
+        </div>
+
+        <!-- Section IBAN -->
+        <div id="iban_section" style="display:none;">
+            <label for="iban">IBAN :</label>
+            <input type="text" name="iban" id="iban">
+
+            <label for="bank_name">Nom de la banque :</label>
+            <input type="text" name="bank_name" id="bank_name">
+        </div>
 
         <button type="submit">Envoyer la demande</button>
 
