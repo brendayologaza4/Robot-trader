@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Demande de Retrait - Robot Trader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f1116;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #1a1d24;
+            color: #00ff9d;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.5rem;
+        }
+        .logout-btn {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: #1a1d24;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,255,157,0.1);
+        }
+        h2 {
+            color: #00ff9d;
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: #111;
+            color: #fff;
+        }
+        button {
+            margin-top: 1.5rem;
+            width: 100%;
+            padding: 12px;
+            background-color: #00ff9d;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            color: #000;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #00e68c;
+        }
+        .message {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .success { color: #00ff9d; }
+        .error { color: #ff4d4f; }
+    </style>
+</head>
+<body>
+
+<header>
+    Demande de Retrait
+    <a href="{{ url_for('logout') }}"><button class="logout-btn">Déconnexion</button></a>
+</header>
+
+<div class="container">
+    <h2>Retirer des fonds</h2>
+    <form method="POST">
+        <label for="amount">Montant à retirer (USDT) :</label>
+        <input type="number" name="amount" id="amount" min="1" step="0.01" required>
+
+        <label for="wallet_address">Adresse du portefeuille (USDT - TRC20 de préférence) :</label>
+        <input type="text" name="wallet_address" id="wallet_address" required>
+
+        <button type="submit">Envoyer la demande</button>
+
+        {% if message %}
+            <div class="message {{ 'success' if success else 'error' }}">
+                {{ message }}
+            </div>
+        {% endif %}
+    </form>
+</div>
+
+</body>
+</html>
