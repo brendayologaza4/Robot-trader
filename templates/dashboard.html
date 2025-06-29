@@ -4,10 +4,170 @@
 <head>
     <meta charset="UTF-8">
     <title>Robot Trader - Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
-        /* ... [TOUT ton CSS actuel est parfait, conservé tel quel] ... */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f051d, #1a1a40);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: #111;
+            padding: 20px;
+            font-size: 1.5rem;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(90deg, #facc15, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .menu-icon {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .bar {
+            width: 25px;
+            height: 3px;
+            background-color: #fff;
+            margin: 5px 0;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #1a1a40;
+            transition: left 0.3s ease;
+            z-index: 999;
+            padding-top: 60px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #1e1e2f;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.2);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #facc15;
+        }
+
+        p {
+            font-size: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        table, th, td {
+            border: 1px solid #333;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #111827;
+            color: #facc15;
+        }
+
+        input[type="number"] {
+            padding: 8px;
+            border-radius: 6px;
+            border: none;
+            width: 100%;
+        }
+
+        button {
+            background: linear-gradient(90deg, #9333ea, #3b82f6);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .positive {
+            color: #00ff9d;
+        }
+
+        .negative {
+            color: #ff4c4c;
+        }
+
+        canvas {
+            margin-top: 20px;
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            header {
+                font-size: 1.2rem;
+            }
+
+            table, th, td {
+                font-size: 0.85rem;
+            }
+
+            .sidebar {
+                width: 200px;
+            }
+
+            button {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>
