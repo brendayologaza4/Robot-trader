@@ -46,6 +46,7 @@
         }
         h2 {
             color: #00ff9d;
+            margin-bottom: 1rem;
         }
         table {
             width: 100%;
@@ -120,15 +121,15 @@
     {% if is_admin %}
         <div class="card">
             <h2>Bienvenue, Admin {{ admin.username }}</h2>
-            <p>Configuration des soldes clients :</p>
+            <p>Configurer ou modifier les soldes des clients :</p>
             <table>
                 <thead>
                     <tr>
-                        <th>Nom d'utilisateur</th>
-                        <th>Solde (USDT)</th>
+                        <th>Utilisateur</th>
+                        <th>Solde actuel</th>
                         <th>Nouveau solde</th>
                         <th>Action</th>
-                        <th>Voir Profil</th>
+                        <th>Profil</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -162,7 +163,7 @@
                 <p id="performance" class="positive">Performance : +0.00%</p>
                 <canvas id="performanceChart" width="400" height="200"></canvas>
             {% else %}
-                <p>Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
+                <p>⚠️ Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
             {% endif %}
         </div>
 
@@ -192,14 +193,14 @@
 <script>
     const labels = [...Array(20)].map((_, i) => `-${19 - i}`);
     const initialBalance = {{ balance }};
-    let data = [initialBalance];
+    let data = Array(20).fill(initialBalance);
 
     const chart = new Chart(document.getElementById('performanceChart'), {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Évolution de la valeur d’action',
+                label: 'Évolution simulée',
                 data: data,
                 borderColor: '#00ff9d',
                 backgroundColor: 'rgba(0,255,157,0.1)',
@@ -209,8 +210,9 @@
         },
         options: {
             animation: false,
+            responsive: true,
             scales: {
-                y: { beginAtZero: false },
+                y: { beginAtZero: false, ticks: { color: "#888" } },
                 x: { ticks: { color: "#888" } }
             },
             plugins: {
@@ -221,7 +223,7 @@
 
     function updateChart() {
         let last = data[data.length - 1];
-        let variation = last * (Math.random() * 0.01 - 0.005);
+        let variation = last * (Math.random() * 0.015 - 0.0075);
         let newVal = +(last + variation).toFixed(2);
         data.push(newVal);
         if (data.length > 20) data.shift();
