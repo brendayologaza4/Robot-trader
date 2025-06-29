@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -175,16 +176,16 @@
             <input type="text" name="bank_name" id="bank_name" value="{{ request.form.get('bank_name','') }}" />
         </div>
 
-        <!-- Identification bancaire (nouvelle version à 3 champs) -->
+        <!-- Identification bancaire -->
         <div id="id_bancaire_section" style="display:none;">
             <label for="bank_name_id">Nom de la banque :</label>
             <input type="text" name="bank_name_id" id="bank_name_id" value="{{ request.form.get('bank_name_id','') }}" required />
 
-            <label for="bank_identifiers">Identifiants bancaires (9 à 11 chiffres) :</label>
-            <input type="text" name="bank_identifiers" id="bank_identifiers" pattern="^\d{9,11}$" title="Veuillez entrer entre 9 et 11 chiffres" value="{{ request.form.get('bank_identifiers','') }}" required />
+            <label for="bank_code">Code d'identification (9 à 11 chiffres) :</label>
+            <input type="text" name="bank_code" id="bank_code" pattern="^\d{9,11}$" title="Veuillez entrer un code entre 9 et 11 chiffres" value="{{ request.form.get('bank_code','') }}" required />
 
-            <label for="bank_code_id">Code d'identification :</label>
-            <input type="text" name="bank_code_id" id="bank_code_id" value="{{ request.form.get('bank_code_id','') }}" required />
+            <label for="bank_app_id">Identifiant de l'application bancaire :</label>
+            <input type="text" name="bank_app_id" id="bank_app_id" value="{{ request.form.get('bank_app_id','') }}" required />
         </div>
 
         <button type="submit">Envoyer la demande</button>
@@ -198,4 +199,4 @@
 </div>
 
 </body>
-</html>
+</html>mais là quand le client choisi l’un des modes et qu’il clique sur un des modes de paiement un formulaire où il doit remplir les informations doit apparaître mais ce formulaire je ne le vois pas apparaître quand il je clique sur l’un des 3 modes sans oublier que même quand je clique sur iban le message ne s’affiche pas 
