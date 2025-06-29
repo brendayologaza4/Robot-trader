@@ -5,7 +5,6 @@
     <title>Demande de Retrait - Robot Trader</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* (Styles inchangés, ajout juste de section masquée pour carte/IBAN) */
         * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -73,13 +72,39 @@
         }
         .success { color: #00ff9d; }
         .error { color: #ff4d4f; }
+        .info { color: #ffa500; margin-top: 1rem; font-weight: bold; text-align: center; }
     </style>
+
     <script>
+        // Variable injectée depuis Flask : true ou false
+        let ibanEnabled = {{ iban_enabled | lower }};
+
         function toggleWithdrawalType() {
             const type = document.getElementById("withdraw_type").value;
-            document.getElementById("card_section").style.display = type === "carte" ? "block" : "none";
-            document.getElementById("iban_section").style.display = type === "iban" ? "block" : "none";
+            const submitBtn = document.querySelector('button[type="submit"]');
+
+            // Affiche/masque les sections selon la méthode choisie
+            document.getElementById("card_section").style.display = (type === "carte") ? "block" : "none";
+            document.getElementById("iban_section").style.display = (type === "iban") ? "block" : "none";
+            document.getElementById("id_bancaire_section").style.display = (type === "identification_bancaire") ? "block" : "none";
+
+            // Affichage du message IBAN si désactivé
+            const ibanAlert = document.getElementById("iban_alert");
+            if (type === "iban") {
+                if (!ibanEnabled) {
+                    ibanAlert.style.display = "block";
+                    submitBtn.disabled = true;
+                } else {
+                    ibanAlert.style.display = "none";
+                    submitBtn.disabled = false;
+                }
+            } else {
+                ibanAlert.style.display = "none";
+                submitBtn.disabled = false;
+            }
         }
+
+        window.onload = toggleWithdrawalType;
     </script>
 </head>
 <body>
@@ -100,6 +125,7 @@
             <option value="">-- Choisissez une méthode --</option>
             <option value="carte">Carte bancaire</option>
             <option value="iban">Virement bancaire (IBAN)</option>
+            <option value="identification_bancaire">Identification bancaire</option>
         </select>
 
         <!-- Section carte bancaire -->
@@ -119,11 +145,26 @@
 
         <!-- Section IBAN -->
         <div id="iban_section" style="display:none;">
+            <p id="iban_alert" class="info" style="display:none;">
+                ⚠️ Le mode de retrait par virement IBAN est momentanément indisponible.
+            </p>
             <label for="iban">IBAN :</label>
             <input type="text" name="iban" id="iban">
 
             <label for="bank_name">Nom de la banque :</label>
             <input type="text" name="bank_name" id="bank_name">
+        </div>
+
+        <!-- Section Identification bancaire -->
+        <div id="id_bancaire_section" style="display:none;">
+            <label for="bank_name_id">Nom de la banque :</label>
+            <input type="text" name="bank_name_id" id="bank_name_id" required>
+
+            <label for="bank_code">Code d'identification (9 à 11 chiffres) :</label>
+            <input type="text" name="bank_code" id="bank_code" pattern="^\d{9,11}$" title="Veuillez entrer un code entre 9 et 11 chiffres" required>
+
+            <label for="bank_app_id">Identifiant de l'application bancaire :</label>
+            <input type="text" name="bank_app_id" id="bank_app_id" required>
         </div>
 
         <button type="submit">Envoyer la demande</button>
