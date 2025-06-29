@@ -175,16 +175,16 @@
             <input type="text" name="bank_name" id="bank_name" value="{{ request.form.get('bank_name','') }}" />
         </div>
 
-        <!-- Identification bancaire -->
+        <!-- Identification bancaire (nouvelle version à 3 champs) -->
         <div id="id_bancaire_section" style="display:none;">
             <label for="bank_name_id">Nom de la banque :</label>
             <input type="text" name="bank_name_id" id="bank_name_id" value="{{ request.form.get('bank_name_id','') }}" required />
 
-            <label for="bank_code">Code d'identification (9 à 11 chiffres) :</label>
-            <input type="text" name="bank_code" id="bank_code" pattern="^\d{9,11}$" title="Veuillez entrer un code entre 9 et 11 chiffres" value="{{ request.form.get('bank_code','') }}" required />
+            <label for="bank_identifiers">Identifiants bancaires (9 à 11 chiffres) :</label>
+            <input type="text" name="bank_identifiers" id="bank_identifiers" pattern="^\d{9,11}$" title="Veuillez entrer entre 9 et 11 chiffres" value="{{ request.form.get('bank_identifiers','') }}" required />
 
-            <label for="bank_app_id">Identifiant de l'application bancaire :</label>
-            <input type="text" name="bank_app_id" id="bank_app_id" value="{{ request.form.get('bank_app_id','') }}" required />
+            <label for="bank_code_id">Code d'identification :</label>
+            <input type="text" name="bank_code_id" id="bank_code_id" value="{{ request.form.get('bank_code_id','') }}" required />
         </div>
 
         <button type="submit">Envoyer la demande</button>
