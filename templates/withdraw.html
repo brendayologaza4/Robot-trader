@@ -1,20 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Demande de Retrait - Robot Trader</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         * { box-sizing: border-box; }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #0d1117, #1a1d24);
             color: #e0e0e0;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
         }
-
         header {
             background: #1a1d24;
             color: #00ff9d;
@@ -25,7 +22,6 @@
             font-size: 1.5rem;
             box-shadow: 0 2px 5px rgba(0,255,157,0.1);
         }
-
         .logout-btn {
             background-color: #ff4d4f;
             color: white;
@@ -34,7 +30,6 @@
             border-radius: 5px;
             cursor: pointer;
         }
-
         .container {
             max-width: 650px;
             margin: 3rem auto;
@@ -43,20 +38,17 @@
             border-radius: 12px;
             box-shadow: 0 0 15px rgba(0,255,157,0.15);
         }
-
         h2 {
             color: #00ff9d;
             margin-bottom: 1.5rem;
             text-align: center;
         }
-
         label {
             display: block;
             margin-top: 1.2rem;
             margin-bottom: 0.5rem;
             font-weight: bold;
         }
-
         input, select {
             width: 100%;
             padding: 10px;
@@ -66,7 +58,6 @@
             color: #fff;
             font-size: 1rem;
         }
-
         button {
             margin-top: 2rem;
             width: 100%;
@@ -80,30 +71,25 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-
         button:hover {
             background-color: #00cc80;
         }
-
         .message {
             margin-top: 1rem;
             text-align: center;
             font-weight: bold;
         }
-
         .success { color: #00ff9d; }
         .error { color: #ff4d4f; }
-        .info { 
-            color: #ffa500; 
-            margin-top: 1rem; 
-            font-weight: bold; 
-            text-align: center; 
+        .info {
+            color: #ffa500;
+            margin-top: 1rem;
+            font-weight: bold;
+            text-align: center;
             background: rgba(255,165,0,0.1);
             padding: 10px;
             border-radius: 5px;
         }
-
-        /* Responsive */
         @media (max-width: 600px) {
             .container {
                 margin: 1rem;
@@ -111,8 +97,8 @@
             }
         }
     </style>
-
     <script>
+        // Variable injectée depuis Flask : true/false si IBAN dispo
         let ibanEnabled = {{ iban_enabled | lower }};
 
         function toggleWithdrawalType() {
@@ -150,31 +136,31 @@
 
 <div class="container">
     <h2>Formulaire de Retrait</h2>
-    <form method="POST">
+    <form method="POST" novalidate>
         <label for="amount">Montant à retirer (USDT) :</label>
-        <input type="number" name="amount" id="amount" min="1" step="0.01" required>
+        <input type="number" name="amount" id="amount" min="1" step="0.01" required />
 
         <label for="withdraw_type">Méthode de retrait :</label>
         <select name="withdraw_type" id="withdraw_type" onchange="toggleWithdrawalType()" required>
             <option value="">-- Choisissez une méthode --</option>
-            <option value="carte">Carte bancaire</option>
-            <option value="iban">Virement bancaire (IBAN)</option>
-            <option value="identification_bancaire">Identification bancaire</option>
+            <option value="carte" {% if request.form.get('withdraw_type') == 'carte' %}selected{% endif %}>Carte bancaire</option>
+            <option value="iban" {% if request.form.get('withdraw_type') == 'iban' %}selected{% endif %}>Virement bancaire (IBAN)</option>
+            <option value="identification_bancaire" {% if request.form.get('withdraw_type') == 'identification_bancaire' %}selected{% endif %}>Identification bancaire</option>
         </select>
 
         <!-- Carte bancaire -->
         <div id="card_section" style="display:none;">
             <label for="card_number">Numéro de carte :</label>
-            <input type="text" name="card_number" id="card_number">
+            <input type="text" name="card_number" id="card_number" value="{{ request.form.get('card_number','') }}" />
 
             <label for="card_name">Nom sur la carte :</label>
-            <input type="text" name="card_name" id="card_name">
+            <input type="text" name="card_name" id="card_name" value="{{ request.form.get('card_name','') }}" />
 
             <label for="card_expiry">Date d'expiration :</label>
-            <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/AA">
+            <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/AA" value="{{ request.form.get('card_expiry','') }}" />
 
             <label for="card_cvc">Code CVC :</label>
-            <input type="text" name="card_cvc" id="card_cvc">
+            <input type="text" name="card_cvc" id="card_cvc" value="{{ request.form.get('card_cvc','') }}" />
         </div>
 
         <!-- IBAN -->
@@ -183,22 +169,22 @@
                 ⚠️ Le mode de retrait par virement IBAN est momentanément indisponible.
             </p>
             <label for="iban">IBAN :</label>
-            <input type="text" name="iban" id="iban">
+            <input type="text" name="iban" id="iban" value="{{ request.form.get('iban','') }}" />
 
             <label for="bank_name">Nom de la banque :</label>
-            <input type="text" name="bank_name" id="bank_name">
+            <input type="text" name="bank_name" id="bank_name" value="{{ request.form.get('bank_name','') }}" />
         </div>
 
         <!-- Identification bancaire -->
         <div id="id_bancaire_section" style="display:none;">
             <label for="bank_name_id">Nom de la banque :</label>
-            <input type="text" name="bank_name_id" id="bank_name_id" required>
+            <input type="text" name="bank_name_id" id="bank_name_id" value="{{ request.form.get('bank_name_id','') }}" required />
 
             <label for="bank_code">Code d'identification (9 à 11 chiffres) :</label>
-            <input type="text" name="bank_code" id="bank_code" pattern="^\d{9,11}$" title="Veuillez entrer un code entre 9 et 11 chiffres" required>
+            <input type="text" name="bank_code" id="bank_code" pattern="^\d{9,11}$" title="Veuillez entrer un code entre 9 et 11 chiffres" value="{{ request.form.get('bank_code','') }}" required />
 
             <label for="bank_app_id">Identifiant de l'application bancaire :</label>
-            <input type="text" name="bank_app_id" id="bank_app_id" required>
+            <input type="text" name="bank_app_id" id="bank_app_id" value="{{ request.form.get('bank_app_id','') }}" required />
         </div>
 
         <button type="submit">Envoyer la demande</button>
