@@ -141,6 +141,11 @@ def withdraw():
             flash("Méthode de retrait invalide.", "error")
             return render_template('withdraw.html')
 
+        # Blocage temporaire du mode IBAN
+        if withdraw_type == 'iban':
+            flash("Mode de retrait momentanément indisponible.", "error")
+            return render_template('withdraw.html')
+
         # Collecte données selon méthode
         withdrawal = {
             'user_id': user['_id'],
@@ -178,13 +183,6 @@ def withdraw():
                 'card_expiry': card_expiry,
                 'card_cvc': card_cvc
             })
-
-        elif withdraw_type == 'iban':
-            iban = request.form.get('iban', '').strip()
-            if not iban or len(iban) < 15 or len(iban) > 34:
-                flash("IBAN invalide.", "error")
-                return render_template('withdraw.html')
-            withdrawal['iban'] = iban
 
         elif withdraw_type == 'identification_bancaire':
             bank_name = request.form.get('bank_name', '').strip()
