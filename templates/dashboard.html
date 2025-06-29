@@ -179,8 +179,14 @@
 </div>
 
 <div class="sidebar" id="sidebar">
-    <a href="{{ url_for('withdraw') }}">💳 Retrait</a>
-    <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
+    {% if is_admin %}
+        <a href="{{ url_for('withdraw') }}">💳 Retrait</a>
+        <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
+    {% else %}
+        <a href="{{ url_for('withdraw') }}">💳 Retrait</a>
+        <a href="{{ url_for('deposit') }}">⬆️ Dépôt</a>  <!-- Ajout onglet Dépôt -->
+        <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
+    {% endif %}
 </div>
 
 <header>
