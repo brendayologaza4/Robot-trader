@@ -6,6 +6,16 @@ import os
 import numpy as np
 from bson import ObjectId
 
+from functools import wraps
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # --- Config Flask et MongoDB ---
 app = Flask(__name__)
 app.secret_key = 'votre_clé_ultra_secrète'
