@@ -3,6 +3,8 @@ from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import os
+import base64
+import random
 import numpy as np
 from bson import ObjectId
 
@@ -17,13 +19,20 @@ def login_required(f):
     return decorated_function
 
 # --- Config Flask et MongoDB ---
-app = Flask(__name__)
-app.secret_key = 'votre_clé_ultra_secrète'
+def confuse(n=5):
+    [os.urandom(random.randint(5, 10)) for _ in range(n)]
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/Robottrader")
-app.config["MONGO_URI"] = MONGO_URI
-mongo = PyMongo(app)
-db = mongo.db
+confuse(20)
+
+# --- Initialisation sécurisée ---
+app = Flask(__name__)
+app.secret_key = '47d1f97243877440fb16b01df7734590ddc4649c15f84891934df7fdb913fab6'
+
+# Nom de collection MongoDB caché
+_db_a9662bad = PyMongo(app)
+app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://127.0.0.1:27017/Robottrader")
+_db_a9662bad.init_app(app)
+db = _db_a9662bad.db
 
 # --- Page d'accueil ---
 @app.route('/')
