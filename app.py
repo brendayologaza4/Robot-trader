@@ -96,6 +96,7 @@ def logout():
     flash("Déconnecté.", "info")
     return redirect(url_for('login'))
 
+
 @app.route('/dashboard')
 def dashboard():
     if not is_logged_in():
@@ -107,41 +108,27 @@ def dashboard():
         return redirect(url_for('logout'))
 
     role = user.get('role')
+
     if role == 'admin':
-        # Récupération de tous les utilisateurs clients
+        # Récupère tous les utilisateurs clients
         clients = list(db.users.find({'role': 'client'}))
-
-        # Ajout d’un fallback si aucun utilisateur client n’est trouvé
-        if not clients:
-            flash("Aucun utilisateur client trouvé.", "info")
-
         return render_template(
             'dashboard.html',
             is_admin=True,
-            admin={'username': user.get('username', 'Admin')},  # Pour compatibilité avec admin.username
+            admin={'username': user.get('username', 'Admin')},
             users=clients
         )
 
-    elif role == 'client':
-        balance = user.get('balance', 0)
-        chart_labels = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%d-%m') for i in reversed(range(10))]
-        chart_data = [round(balance * (1 + random.uniform(-0.02, 0.05)), 2) for _ in range(10)]
-        performance = round(chart_data[-1] - chart_data[0], 2)
+    # Cas client
+    username = user.get('username')
+    balance = user.get('balance', 0)
 
-        return render_template(
-            'dashboard.html',
-            is_admin=False,
-            username=user['username'],
-            balance=balance,
-            chart_labels=chart_labels,
-            chart_data=chart_data,
-            performance=performance
-        )
-
-    else:
-        flash("Rôle inconnu.", "error")
-        return redirect(url_for('logout'))
-
+    return render_template(
+        'dashboard.html',
+        is_admin=False,
+        username=username,
+        balance=balance
+    )
 
 # Tu peux rajouter ici les routes `/deposit`, `/withdraw`, etc. déjà en place
 
