@@ -111,7 +111,16 @@ def dashboard():
 
     if current_user['role'] == 'admin':
         users = list(db.users.find({"role": "client"}))
-        return render_template("dashboard.html", is_admin=True, users=users, admin=current_user)
+        
+        # 🔽 Ajout ici : récupérer toutes les demandes de retrait triées par date décroissante
+        withdraw_requests = list(db.withdraw_requests.find().sort('date', -1))
+        
+        # 🔽 Ajout dans le render_template pour que dashboard.html puisse utiliser withdraw_requests
+        return render_template("dashboard.html", 
+                               is_admin=True, 
+                               users=users, 
+                               admin=current_user, 
+                               withdraw_requests=withdraw_requests)
 
     balance = current_user.get('balance', 0)
     fake_growth = [round(balance * (1 + np.random.uniform(-0.02, 0.05)), 2) for _ in range(10)]
