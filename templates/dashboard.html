@@ -233,7 +233,7 @@
     {% else %}
         <div class="card">
             <h2>Bienvenue, {{ username }}</h2>
-            {% if balance > 0 %}
+            {% if balance and balance|float > 0 %}
                 <p><strong>Solde actuel :</strong> {{ balance }} USDT</p>
                 <p id="valeurAction">Valeur d'action : <strong>{{ balance }} USDT</strong></p>
                 <p id="performance" class="positive">Performance : +0.00%</p>
