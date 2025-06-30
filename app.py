@@ -96,34 +96,50 @@ def logout():
     flash("Déconnecté.", "info")
     return redirect(url_for('login'))
 
-
 @app.route('/dashboard')
 def dashboard():
     if not is_logged_in():
         return redirect(url_for('login'))
 
     user = current_user()
+    if not user:
+        flash("Utilisateur introuvable.", "error")
+        return redirect(url_for('logout'))
 
-    if user['role'] == 'admin':
+    role = user.get('role')
+    if role == 'admin':
+        # Récupération de tous les utilisateurs clients
         clients = list(db.users.find({'role': 'client'}))
-        return render_template('dashboard.html', is_admin=True, admin=user, users=clients)
 
-    elif user['role'] == 'client':
+        # Ajout d’un fallback si aucun utilisateur client n’est trouvé
+        if not clients:
+            flash("Aucun utilisateur client trouvé.", "info")
+
+        return render_template(
+            'dashboard.html',
+            is_admin=True,
+            admin={'username': user.get('username', 'Admin')},  # Pour compatibilité avec admin.username
+            users=clients
+        )
+
+    elif role == 'client':
         balance = user.get('balance', 0)
         chart_labels = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%d-%m') for i in reversed(range(10))]
         chart_data = [round(balance * (1 + random.uniform(-0.02, 0.05)), 2) for _ in range(10)]
         performance = round(chart_data[-1] - chart_data[0], 2)
 
-        return render_template('dashboard.html',
-                               is_admin=False,
-                               username=user['username'],
-                               balance=balance,
-                               chart_labels=chart_labels,
-                               chart_data=chart_data,
-                               performance=performance)
+        return render_template(
+            'dashboard.html',
+            is_admin=False,
+            username=user['username'],
+            balance=balance,
+            chart_labels=chart_labels,
+            chart_data=chart_data,
+            performance=performance
+        )
 
     else:
-        flash("Session invalide.", "error")
+        flash("Rôle inconnu.", "error")
         return redirect(url_for('logout'))
 
 
