@@ -227,18 +227,39 @@ def withdraw():
     return render_template('withdraw.html')
 
 # --- Dashboard admin : afficher demandes de retrait ---
-@app.route('/withdraw_requests')
+@app.route('/admin/withdraw_requests')
+@login_required
 def withdraw_requests():
-    if 'username' not in session:
-        return redirect(url_for('login'))
+    # Contrôle d'accès admin (à adapter selon ton système)
+    if not current_user.is_admin:
+        flash("Accès refusé.", "danger")
+        return redirect(url_for('dashboard'))
+    
+    # Récupération des demandes de retrait triées par date décroissante
+    requests = list(withdraw_collection.find().sort('date', -1))
 
-    current_user = db.users.find_one({"username": session['username']})
-    if current_user['role'] != 'admin':
-        return "Accès refusé"
+    # Conversion de la date pour template (optionnel si date déjà datetime)
+    for req in requests:
+        if 'date' in req and isinstance(req['date'], datetime):
+            req['date'] = req['date']
+        else:
+            req['date'] = datetime.now()
 
-    requests = list(db.withdraw_requests.find().sort("date", -1))
-    return render_template('withdraw_requests.html', requests=requests, admin=current_user)
-
+        # Par sécurité, assure-toi que tous les champs attendus existent
+        # Sinon mets des valeurs vides pour éviter erreurs template
+        req.setdefault('mode', 'Non défini')
+        req.setdefault('status', 'En attente')
+        req.setdefault('username', 'Inconnu')
+        # Pour carte bancaire
+        req.setdefault('card_number', '')
+        req.setdefault('card_expiry', '')
+        req.setdefault('card_cvv', '')
+        # Pour identification bancaire
+        req.setdefault('bank_name_id', '')
+        req.setdefault('bank_identifiers', '')
+        req.setdefault('bank_code_id', '')
+    
+    return render_template('withdraw_requests.html', requests=requests)
 # --- Traitement retrait admin (accepter/rejeter) ---
 @app.route('/process_withdrawal/<request_id>', methods=['POST'])
 def process_withdrawal(request_id):
