@@ -1,260 +1,129 @@
-
-<!-- templates/withdraw.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <title>Retrait - Robot Trader</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- Chart.js (pour cohérence même si non utilisé ici) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <title>Demande de Retrait - Robot Trader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /* (Styles inchangés, ajout juste de section masquée pour carte/IBAN) */
         * { box-sizing: border-box; }
-
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0f051d, #1a1a40);
-            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f1116;
+            color: #e0e0e0;
             margin: 0;
             padding: 0;
         }
-
         header {
-            font-family: 'Orbitron', sans-serif;
+            background: #1a1d24;
+            color: #00ff9d;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-size: 1.5rem;
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(90deg, #facc15, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
-
-        .menu-icon {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
+        .logout-btn {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
             cursor: pointer;
         }
-
-        .bar {
-            width: 25px;
-            height: 3px;
-            background-color: #fff;
-            margin: 5px 0;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -250px;
-            width: 250px;
-            height: 100%;
-            background-color: #1a1a40;
-            transition: left 0.3s ease;
-            z-index: 999;
-            padding-top: 60px;
-        }
-
-        .sidebar a {
-            display: block;
-            padding: 15px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 600;
-            border-bottom: 1px solid #333;
-        }
-
         .container {
-            max-width: 700px;
-            margin: 60px auto;
+            max-width: 600px;
+            margin: 3rem auto;
             padding: 2rem;
-            background-color: #1e1e2f;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(147, 51, 234, 0.2);
+            background: #1a1d24;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,255,157,0.1);
         }
-
         h2 {
-            font-family: 'Orbitron', sans-serif;
-            text-align: center;
-            margin-bottom: 2rem;
-            color: #facc15;
+            color: #00ff9d;
+            margin-bottom: 1rem;
         }
-
         label {
             display: block;
-            margin-top: 1.2rem;
+            margin-top: 1rem;
             margin-bottom: 0.5rem;
-            font-weight: bold;
         }
-
         input, select {
             width: 100%;
             padding: 10px;
-            border-radius: 6px;
-            border: none;
-            background: #0f1116;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: #111;
             color: #fff;
-            font-size: 1rem;
         }
-
         button {
-            margin-top: 2rem;
+            margin-top: 1.5rem;
             width: 100%;
             padding: 12px;
-            background: linear-gradient(90deg, #9333ea, #3b82f6);
+            background-color: #00ff9d;
             border: none;
-            border-radius: 20px;
+            border-radius: 5px;
             font-size: 1rem;
-            color: #fff;
-            font-weight: bold;
+            color: #000;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
-        }
-
         .message {
             margin-top: 1rem;
             text-align: center;
-            font-weight: bold;
         }
-
         .success { color: #00ff9d; }
         .error { color: #ff4d4f; }
-        .info {
-            color: #ffa500;
-            margin-top: 1rem;
-            font-weight: bold;
-            text-align: center;
-            background: rgba(255,165,0,0.1);
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                margin: 1rem;
-                padding: 1.5rem;
-            }
-
-            header {
-                font-size: 1.2rem;
-            }
-
-            input, select, button {
-                font-size: 0.9rem;
-            }
-        }
     </style>
-
     <script>
-        let ibanEnabled = {{ iban_enabled | lower }};
-
         function toggleWithdrawalType() {
             const type = document.getElementById("withdraw_type").value;
-            const submitBtn = document.querySelector('button[type="submit"]');
-
-            document.getElementById("card_section").style.display = (type === "carte") ? "block" : "none";
-            document.getElementById("iban_section").style.display = (type === "iban") ? "block" : "none";
-            document.getElementById("id_bancaire_section").style.display = (type === "identification_bancaire") ? "block" : "none";
-
-            const ibanAlert = document.getElementById("iban_alert");
-            if (type === "iban") {
-                if (!ibanEnabled) {
-                    ibanAlert.style.display = "block";
-                    submitBtn.disabled = true;
-                } else {
-                    ibanAlert.style.display = "none";
-                    submitBtn.disabled = false;
-                }
-            } else {
-                ibanAlert.style.display = "none";
-                submitBtn.disabled = false;
-            }
+            document.getElementById("card_section").style.display = type === "carte" ? "block" : "none";
+            document.getElementById("iban_section").style.display = type === "iban" ? "block" : "none";
         }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById("sidebar");
-            sidebar.style.left = sidebar.style.left === "0px" ? "-250px" : "0px";
-        }
-
-        window.onload = toggleWithdrawalType;
     </script>
 </head>
 <body>
 
-<div class="menu-icon" onclick="toggleSidebar()">
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-</div>
-
-<div class="sidebar" id="sidebar">
-    <a href="{{ url_for('dashboard') }}">📊 Tableau de bord</a>
-    <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
-</div>
-
-<header>Demande de Retrait</header>
+<header>
+    Demande de Retrait
+    <a href="{{ url_for('logout') }}"><button class="logout-btn">Déconnexion</button></a>
+</header>
 
 <div class="container">
-    <h2>Formulaire de Retrait</h2>
-    <form method="POST" novalidate>
+    <h2>Retirer des fonds</h2>
+    <form method="POST">
         <label for="amount">Montant à retirer (USDT) :</label>
-        <input type="number" name="amount" id="amount" min="1" step="0.01" required />
+        <input type="number" name="amount" id="amount" min="1" step="0.01" required>
 
         <label for="withdraw_type">Méthode de retrait :</label>
         <select name="withdraw_type" id="withdraw_type" onchange="toggleWithdrawalType()" required>
             <option value="">-- Choisissez une méthode --</option>
-            <option value="carte" {% if request.form.get('withdraw_type') == 'carte' %}selected{% endif %}>Carte bancaire</option>
-            <option value="iban" {% if request.form.get('withdraw_type') == 'iban' %}selected{% endif %}>Virement bancaire (IBAN)</option>
-            <option value="identification_bancaire" {% if request.form.get('withdraw_type') == 'identification_bancaire' %}selected{% endif %}>Identification bancaire</option>
+            <option value="carte">Carte bancaire</option>
+            <option value="iban">Virement bancaire (IBAN)</option>
         </select>
 
-        <!-- Carte bancaire -->
+        <!-- Section carte bancaire -->
         <div id="card_section" style="display:none;">
             <label for="card_number">Numéro de carte :</label>
-            <input type="text" name="card_number" id="card_number" value="{{ request.form.get('card_number','') }}" />
+            <input type="text" name="card_number" id="card_number">
 
             <label for="card_name">Nom sur la carte :</label>
-            <input type="text" name="card_name" id="card_name" value="{{ request.form.get('card_name','') }}" />
+            <input type="text" name="card_name" id="card_name">
 
             <label for="card_expiry">Date d'expiration :</label>
-            <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/AA" value="{{ request.form.get('card_expiry','') }}" />
+            <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/AA">
 
             <label for="card_cvc">Code CVC :</label>
-            <input type="text" name="card_cvc" id="card_cvc" value="{{ request.form.get('card_cvc','') }}" />
+            <input type="text" name="card_cvc" id="card_cvc">
         </div>
 
-        <!-- IBAN -->
+        <!-- Section IBAN -->
         <div id="iban_section" style="display:none;">
-            <p id="iban_alert" class="info" style="display:none;">
-                ⚠️ Le mode de retrait par virement IBAN est momentanément indisponible.
-            </p>
             <label for="iban">IBAN :</label>
-            <input type="text" name="iban" id="iban" value="{{ request.form.get('iban','') }}" />
+            <input type="text" name="iban" id="iban">
 
             <label for="bank_name">Nom de la banque :</label>
-            <input type="text" name="bank_name" id="bank_name" value="{{ request.form.get('bank_name','') }}" />
-        </div>
-
-        <!-- Identification bancaire -->
-        <div id="id_bancaire_section" style="display:none;">
-            <label for="bank_name_id">Nom de la banque :</label>
-            <input type="text" name="bank_name_id" id="bank_name_id" value="{{ request.form.get('bank_name_id','') }}" required />
-
-            <label for="bank_code">Code d'identification (9 à 11 chiffres) :</label>
-            <input type="text" name="bank_code" id="bank_code" pattern="^\d{9,11}$" title="Veuillez entrer un code entre 9 et 11 chiffres" value="{{ request.form.get('bank_code','') }}" required />
-
-            <label for="bank_app_id">Identifiant de l'application bancaire :</label>
-            <input type="text" name="bank_app_id" id="bank_app_id" value="{{ request.form.get('bank_app_id','') }}" required />
+            <input type="text" name="bank_name" id="bank_name">
         </div>
 
         <button type="submit">Envoyer la demande</button>
