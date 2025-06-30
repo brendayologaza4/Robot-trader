@@ -6,6 +6,7 @@ import datetime
 import os
 import re
 import random
+import numpy as np
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'cle_secrete_par_defaut')
