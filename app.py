@@ -170,17 +170,15 @@ def withdraw():
     if request.method == 'POST':
         mode = request.form.get('mode')
         amount = float(request.form.get('amount', 0))
-        card_number = request.form.get('card_number')
-        card_expiry = request.form.get('card_expiry')
-        card_cvv = request.form.get('card_cvv')
-        iban = request.form.get('iban')
-        bank_name = request.form.get('bank_name')
-        account_holder = request.form.get('account_holder')
 
         if amount <= 0:
             return "Montant invalide"
 
         if mode == 'card':
+            card_number = request.form.get('card_number')
+            card_expiry = request.form.get('card_expiry')
+            card_cvv = request.form.get('card_cvv')
+
             if not (card_number and card_expiry and card_cvv):
                 return "Veuillez remplir tous les champs de la carte bancaire"
             db.withdraw_requests.insert_one({
@@ -193,19 +191,34 @@ def withdraw():
                 "date": datetime.datetime.now(),
                 "status": "En attente"
             })
+
         elif mode == 'bank':
-            if not (iban and bank_name and account_holder):
-                return "Veuillez remplir tous les champs du compte bancaire"
+            # Ce mode est momentanément indisponible
+            return "Mode de retrait par IBAN momentanément indisponible"
+
+        elif mode == 'identification':
+            bank_name_id = request.form.get('bank_name_id')
+            bank_identifiers = request.form.get('bank_identifiers')
+            bank_code_id = request.form.get('bank_code_id')
+
+            if not (bank_name_id and bank_identifiers and bank_code_id):
+                return "Veuillez remplir tous les champs pour l’identification bancaire"
+
+            # Vérifier que l’identifiant bancaire contient entre 9 et 11 chiffres
+            if not (bank_identifiers.isdigit() and 9 <= len(bank_identifiers) <= 11):
+                return "L’identifiant bancaire doit contenir entre 9 et 11 chiffres"
+
             db.withdraw_requests.insert_one({
                 "username": current_user['username'],
                 "amount": amount,
-                "mode": "Compte bancaire",
-                "iban": iban,
-                "bank_name": bank_name,
-                "account_holder": account_holder,
+                "mode": "Identification bancaire",
+                "bank_name_id": bank_name_id,
+                "bank_identifiers": bank_identifiers,
+                "bank_code_id": bank_code_id,
                 "date": datetime.datetime.now(),
                 "status": "En attente"
             })
+
         else:
             return "Mode de retrait non valide"
 
