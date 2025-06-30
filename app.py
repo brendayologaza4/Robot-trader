@@ -89,48 +89,71 @@ def login():
 
     return render_template('login.html')
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    username = session.get('username')
-    if not username:
-        flash("Session expirée. Veuillez vous reconnecter.", "error")
+    if 'username' not in session:
         return redirect(url_for('login'))
 
-    user = db.users.find_one({'username': username})
-    if not user:
-        flash("Utilisateur introuvable. Veuillez vous reconnecter.", "error")
-        return redirect(url_for('logout'))
+    current_user = db.users.find_one({"username": session['username']})
 
-    role = user.get('role', '').lower()
-    if role == 'admin':
-        clients = list(db.users.find({'role': 'client'}))
-        return render_template(
-            'dashboard.html',
-            is_admin=True,
-            admin={'username': user.get('username', 'Admin')},
-            users=clients
-        )
-    elif role == 'client':
-        try:
-            balance = float(user.get('balance', 0))  # force un float
-        except (ValueError, TypeError):
-            balance = 0.0
+    if current_user['role'] == 'admin':
+        users = list(db.users.find({"role": "client"}))
+        return render_template("dashboard.html", is_admin=True, users=users, admin=current_user)
 
-        try:
-            benefit = float(user.get('benefit', 0))
-        except (ValueError, TypeError):
-            benefit = 0.0
+    balance = current_user.get('balance', 0)
+    fake_growth = [round(balance * (1 + np.random.uniform(-0.02, 0.05)), 2) for _ in range(10)]
+    dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%d-%m') for i in reversed(range(10))]
 
-        return render_template(
-            'dashboard.html',
-            is_admin=False,
-            username=user.get('username', 'Client'),
-            balance=balance,
-            benefit=benefit
-        )
-    else:
-        flash("Rôle utilisateur non reconnu.", "error")
-        return redirect(url_for('logout'))
+    return render_template("dashboard.html",
+                           is_admin=False,
+                           username=current_user['username'],
+                           balance=balance,
+                           chart_labels=dates,
+                           chart_data=fake_growth,
+                           performance=round(fake_growth[-1] - fake_growth[0], 2))
+
+# --- Modifier solde client (admin) ---
+@app.route('/update_balance', methods=['POST'])
+def update_balance():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    admin = db.users.find_one({"username": session['username']})
+    if admin['role'] != 'admin':
+        return "Accès refusé"
+
+    target = request.form['username']
+    new_balance = float(request.form['new_balance'])
+
+    db.users.update_one({"username": target}, {"$set": {"balance": new_balance}})
+    return redirect(url_for('dashboard'))
+
+# --- Voir le profil d’un utilisateur (admin) ---
+@app.route('/user/<username>')
+def user_profile(username):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    current_user = db.users.find_one({"username": session['username']})
+    if not current_user or current_user['role'] != 'admin':
+        return render_template('403.html'), 403
+
+    target_user = db.users.find_one({"username": username})
+    if not target_user:
+        return render_template('404.html'), 404
+
+    balance = target_user.get('balance', 0)
+    fake_growth = [round(balance * (1 + np.random.uniform(-0.02, 0.05)), 2) for _ in range(10)]
+    dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%d-%m') for i in reversed(range(10))]
+    performance = round(fake_growth[-1] - fake_growth[0], 2)
+
+    return render_template("user_profile.html",
+                           username=target_user['username'],
+                           balance=balance,
+                           chart_labels=dates,
+                           chart_data=fake_growth,
+                           performance=performance)
+
 # Tu peux rajouter ici les routes `/deposit`, `/withdraw`, etc. déjà en place
 
 @app.route('/withdraw', methods=['GET', 'POST'])
