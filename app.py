@@ -89,28 +89,24 @@ def login():
 
     return render_template('login.html')
 
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash("Déconnecté.", "info")
-    return redirect(url_for('login'))
-
-
 @app.route('/dashboard')
 def dashboard():
-    if not is_logged_in():
+    # Étape 1 : Vérifie que la session contient bien le nom d'utilisateur
+    username = session.get('username')
+    if not username:
+        flash("Session expirée. Veuillez vous reconnecter.", "error")
         return redirect(url_for('login'))
 
-    user = current_user()
+    # Étape 2 : Récupère l'utilisateur dans la base de données
+    user = db.users.find_one({'username': username})
     if not user:
-        flash("Utilisateur introuvable.", "error")
+        flash("Utilisateur introuvable. Veuillez vous reconnecter.", "error")
         return redirect(url_for('logout'))
 
-    role = user.get('role')
-
+    # Étape 3 : Vérifie que le rôle existe et est bien "admin" ou "client"
+    role = user.get('role', '').lower()  # on force en minuscules pour éviter les erreurs
     if role == 'admin':
-        # Récupère tous les utilisateurs clients
+        # Cas ADMIN : Récupère tous les utilisateurs clients
         clients = list(db.users.find({'role': 'client'}))
         return render_template(
             'dashboard.html',
@@ -118,17 +114,20 @@ def dashboard():
             admin={'username': user.get('username', 'Admin')},
             users=clients
         )
+    elif role == 'client':
+        # Cas CLIENT : Affiche son propre dashboard simulé
+        return render_template(
+            'dashboard.html',
+            is_admin=False,
+            username=user.get('username'),
+            balance=user.get('balance', 0),
+            benefit=user.get('benefit', 0)
+        )
+    else:
+        # Si le rôle est inconnu
+        flash("Rôle utilisateur non reconnu.", "error")
+        return redirect(url_for('logout'))
 
-    # Cas client
-    username = user.get('username')
-    balance = user.get('balance', 0)
-
-    return render_template(
-        'dashboard.html',
-        is_admin=False,
-        username=username,
-        balance=balance
-    )
 
 # Tu peux rajouter ici les routes `/deposit`, `/withdraw`, etc. déjà en place
 
