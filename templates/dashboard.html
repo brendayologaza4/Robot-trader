@@ -1,172 +1,175 @@
-<!-- templates/dashboard.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Robot Trader - Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        * { box-sizing: border-box; }
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f1116;
             margin: 0;
             padding: 0;
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0f051d, #1a1a40);
-            color: #ffffff;
-            overflow-x: hidden;
-        }
-
-        header {
-            background-color: #111;
-            padding: 20px;
-            font-size: 1.5rem;
-            text-align: center;
-            font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(90deg, #facc15, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #e0e0e0;
         }
 
         .menu-icon {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
+            position: absolute;
+            top: 15px;
+            left: 15px;
             cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 22px;
         }
 
-        .bar {
-            width: 25px;
-            height: 3px;
-            background-color: #fff;
-            margin: 5px 0;
+        .menu-icon .bar {
+            height: 4px;
+            width: 100%;
+            background-color: #00ff9d;
+            border-radius: 2px;
         }
 
         .sidebar {
             position: fixed;
             top: 0;
             left: -250px;
-            width: 250px;
+            width: 220px;
             height: 100%;
-            background-color: #1a1a40;
+            background: #1a1d24;
+            padding-top: 60px;
             transition: left 0.3s ease;
             z-index: 999;
-            padding-top: 60px;
+            box-shadow: 2px 0 10px rgba(0,255,157,0.2);
         }
 
         .sidebar a {
             display: block;
-            padding: 15px;
-            color: #fff;
+            color: #e0e0e0;
+            padding: 15px 20px;
             text-decoration: none;
-            font-weight: 600;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid #2b2e36;
+        }
+
+        .sidebar a:hover {
+            background: #00ff9d;
+            color: #000;
+        }
+
+        header {
+            background: #1a1d24;
+            color: #00ff9d;
+            padding: 1rem 2rem;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logout-btn {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 5px;
         }
 
         .container {
+            padding: 2rem;
             max-width: 1200px;
-            margin: 40px auto;
-            padding: 20px;
+            margin: auto;
         }
 
         .card {
-            background-color: #1e1e2f;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(147, 51, 234, 0.2);
-            padding: 20px;
-            margin-bottom: 30px;
+            background: #1a1d24;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,255,157,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
 
         h2 {
-            font-family: 'Orbitron', sans-serif;
-            color: #facc15;
-        }
-
-        p {
-            font-size: 1rem;
+            color: #00ff9d;
+            margin-bottom: 1rem;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        table, th, td {
-            border: 1px solid #333;
+            margin-top: 1rem;
         }
 
         th, td {
-            padding: 10px;
-            text-align: center;
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #2b2e36;
         }
 
         th {
-            background-color: #111827;
-            color: #facc15;
+            background-color: #2b2e36;
+            color: #00ff9d;
         }
 
         input[type="number"] {
-            padding: 8px;
-            border-radius: 6px;
-            border: none;
             width: 100%;
+            padding: 6px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #111;
+            color: #fff;
         }
 
         button {
-            background: linear-gradient(90deg, #9333ea, #3b82f6);
-            color: #fff;
+            background-color: #00ff9d;
+            color: #000;
             border: none;
-            border-radius: 20px;
-            padding: 8px 16px;
+            padding: 8px 12px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+            background-color: #00e68c;
         }
 
         .positive {
             color: #00ff9d;
+            font-weight: bold;
         }
 
         .negative {
-            color: #ff4c4c;
+            color: #ff4d4f;
+            font-weight: bold;
         }
 
         canvas {
-            margin-top: 20px;
+            margin-top: 1rem;
+            background-color: #101317;
+            border: 1px solid #222;
+            border-radius: 5px;
         }
 
-        @media screen and (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
+        a button {
+            background-color: #444;
+            color: #eee;
+        }
 
-            header {
-                font-size: 1.2rem;
-            }
+        a button:hover {
+            background-color: #666;
+        }
 
-            table, th, td {
-                font-size: 0.85rem;
-            }
-
-            .sidebar {
-                width: 200px;
-            }
-
-            button {
-                padding: 6px 12px;
-                font-size: 0.85rem;
-            }
+        @media (max-width: 768px) {
+            body { font-size: 0.95rem; }
+            .container { padding: 1rem; }
+            th, td { font-size: 0.9rem; }
+            .logout-btn { padding: 6px 10px; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -179,14 +182,8 @@
 </div>
 
 <div class="sidebar" id="sidebar">
-    {% if is_admin %}
-        <a href="{{ url_for('withdraw') }}">💳 Retrait</a>
-        <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
-    {% else %}
-        <a href="{{ url_for('withdraw') }}">💳 Retrait</a>
-        <a href="{{ url_for('deposit') }}">⬆️ Dépôt</a>  <!-- Ajout onglet Dépôt -->
-        <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
-    {% endif %}
+    <a href="{{ url_for('withdraw') }}">💳 Retrait</a>
+    <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
 </div>
 
 <header>
@@ -233,7 +230,7 @@
     {% else %}
         <div class="card">
             <h2>Bienvenue, {{ username }}</h2>
-            {% if balance and balance|float > 0 %}
+            {% if balance > 0 %}
                 <p><strong>Solde actuel :</strong> {{ balance }} USDT</p>
                 <p id="valeurAction">Valeur d'action : <strong>{{ balance }} USDT</strong></p>
                 <p id="performance" class="positive">Performance : +0.00%</p>
@@ -276,7 +273,7 @@
         data: {
             labels: labels,
             datasets: [{
-                label: 'Évolution de la valeur d\'action',
+                label: 'Évolution simulée',
                 data: data,
                 borderColor: '#00ff9d',
                 backgroundColor: 'rgba(0,255,157,0.1)',
