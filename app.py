@@ -91,22 +91,18 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
-    # Étape 1 : Vérifie que la session contient bien le nom d'utilisateur
     username = session.get('username')
     if not username:
         flash("Session expirée. Veuillez vous reconnecter.", "error")
         return redirect(url_for('login'))
 
-    # Étape 2 : Récupère l'utilisateur dans la base de données
     user = db.users.find_one({'username': username})
     if not user:
         flash("Utilisateur introuvable. Veuillez vous reconnecter.", "error")
         return redirect(url_for('logout'))
 
-    # Étape 3 : Vérifie que le rôle existe et est bien "admin" ou "client"
-    role = user.get('role', '').lower()  # on force en minuscules pour éviter les erreurs
+    role = user.get('role', '').lower()
     if role == 'admin':
-        # Cas ADMIN : Récupère tous les utilisateurs clients
         clients = list(db.users.find({'role': 'client'}))
         return render_template(
             'dashboard.html',
@@ -115,20 +111,26 @@ def dashboard():
             users=clients
         )
     elif role == 'client':
-        # Cas CLIENT : Affiche son propre dashboard simulé
+        try:
+            balance = float(user.get('balance', 0))  # force un float
+        except (ValueError, TypeError):
+            balance = 0.0
+
+        try:
+            benefit = float(user.get('benefit', 0))
+        except (ValueError, TypeError):
+            benefit = 0.0
+
         return render_template(
             'dashboard.html',
             is_admin=False,
-            username=user.get('username'),
-            balance=user.get('balance', 0),
-            benefit=user.get('benefit', 0)
+            username=user.get('username', 'Client'),
+            balance=balance,
+            benefit=benefit
         )
     else:
-        # Si le rôle est inconnu
         flash("Rôle utilisateur non reconnu.", "error")
         return redirect(url_for('logout'))
-
-
 # Tu peux rajouter ici les routes `/deposit`, `/withdraw`, etc. déjà en place
 
 @app.route('/withdraw', methods=['GET', 'POST'])
