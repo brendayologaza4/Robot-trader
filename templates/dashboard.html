@@ -95,7 +95,7 @@
             margin-bottom: 2rem;
         }
 
-        h2 {
+        h2, h5 {
             color: #00ff9d;
             margin-bottom: 1rem;
         }
@@ -165,6 +165,10 @@
             background-color: #666;
         }
 
+        .card-body.table-responsive {
+            overflow-x: auto;
+        }
+
         @media (max-width: 768px) {
             body { font-size: 0.95rem; }
             .container { padding: 1rem; }
@@ -227,6 +231,56 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Demandes de retrait -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Demandes de retrait</h5>
+            </div>
+            <div class="card-body table-responsive">
+                {% if withdraw_requests %}
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Utilisateur</th>
+                            <th>Méthode</th>
+                            <th>Montant (€)</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th>Détails</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in withdraw_requests %}
+                        <tr>
+                            <td>{{ req.username }}</td>
+                            <td>{{ req.method }}</td>
+                            <td>{{ req.amount }}</td>
+                            <td>
+                                {% if req.date %}
+                                    {{ req.date.strftime('%d-%m-%Y %H:%M') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ req.status }}</td>
+                            <td>
+                                {% for key, value in req.items() %}
+                                    {% if key not in ['_id', 'username', 'method', 'amount', 'date', 'status'] %}
+                                        <strong>{{ key }}:</strong> {{ value }}<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    <p>Aucune demande de retrait pour le moment.</p>
+                {% endif %}
+            </div>
+        </div>
+
     {% else %}
         <div class="card">
             <h2>Bienvenue, {{ username }}</h2>
@@ -273,12 +327,12 @@
         data: {
             labels: labels,
             datasets: [{
-                label: 'Évolution simulée',
+                label: 'Évolution valeur actions',
                 data: data,
                 borderColor: '#00ff9d',
                 backgroundColor: 'rgba(0,255,157,0.1)',
                 fill: true,
-                tension: 0.3
+                tension: 0
             }]
         },
         options: {
