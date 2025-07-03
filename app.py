@@ -9,24 +9,15 @@ import random
 import numpy as np
 import requests
 
-
 NOWPAYMENTS_API_KEY = "CADPW8X-HAJ4NE1-GESD40K-BE8YE8E"
-
-
-
 
 # --- Initialisation Flask ---
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-this-in-env")
-
 # --- Config MongoDB ---
 app.config["MONGO_URI"] = "mongodb+srv://brendayologaza4:victoire47@cluster0.mongodb.net/Robottrader?retryWrites=true&w=majority"
-
-# --- Connexion MongoDB ---
-
-    mongo = PyMongo(app)
-    db = mongo.db
-
+mongo = PyMongo(app)
+db = mongo.db
 
 # --- Authentification protégée ---
 def login_required(f):
