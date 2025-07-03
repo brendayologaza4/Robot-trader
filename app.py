@@ -6,7 +6,7 @@ import os
 import random
 from bson import ObjectId
 from functools import wraps
-from dotenv import load_dotenv
+
 
 # --- Charger les variables .env ---
 load_dotenv()
