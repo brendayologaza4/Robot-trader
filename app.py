@@ -3,11 +3,29 @@ from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import os
-import base64
 import random
 from bson import ObjectId
 from functools import wraps
+from dotenv import load_dotenv
 
+# --- Charger les variables .env ---
+load_dotenv()
+
+# --- Initialisation Flask ---
+app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "change-this-in-env")
+
+# --- Config MongoDB ---
+app.config["MONGO_URI"] = os.getenv("MONGO_URI", "")
+
+# --- Connexion MongoDB ---
+try:
+    mongo = PyMongo(app)
+    db = mongo.db
+except Exception as e:
+    print(f"Erreur de connexion MongoDB : {e}")
+
+# --- Authentification protégée ---
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -16,24 +34,20 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# --- Fonction de confusion basique (optionnel) ---
 def confuse(n=5):
     [os.urandom(random.randint(5, 10)) for _ in range(n)]
 
 confuse(20)
 
-# --- Initialisation sécurisée ---
-app = Flask(__name__)
-app.secret_key = '47d1f97243877440fb16b01df7734590ddc4649c15f84891934df7fdb913fab6'
-
-# --- Config MongoDB ---
-app.config["MONGO_URI"] = os.getenv(
-    "MONGO_URI",
-    "mongodb+srv://brendayologaza4:victoire47@cluster0.mongodb.net/Robottrader"
-)
-
-mongo = PyMongo(app)
-db = mongo.db
-
+# --- Sécurité des headers (protection minimale) ---
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'"
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    return response
 # --- Page d'accueil ---
 @app.route('/')
 def index():
