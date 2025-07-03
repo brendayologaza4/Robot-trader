@@ -184,7 +184,45 @@ def user_profile(username):
                            chart_labels=dates,
                            chart_data=fake_growth,
                            performance=performance)
+import requests
+from flask import Flask, redirect, session, jsonify
 
+NOWPAYMENTS_API_KEY = "CADPW8X-HAJ4NE1-GESD40K-BE8YE8E"
+
+@app.route('/create_payment')
+def create_payment():
+    if 'username' not in session:
+        return jsonify({"error": "Utilisateur non connecté"}), 403
+
+    # Montant par défaut
+    amount = 250 # Tu peux remplacer 20 par un champ personnalisable plus tard
+
+    # Construction des données de paiement
+    payload = {
+        "price_amount": amount,
+        "price_currency": "usd",
+        "pay_currency": "usdttrc20",
+        "order_id": session['username'],
+        "order_description": f"Dépôt de {amount} USDT pour {session['username']}",
+        "ipn_callback_url": "https://robot-trader.onrender.com/ipn-nowpayments",  # à coder ensuite
+        "success_url": "https://robot-trader.onrender.com/dashboard",
+        "cancel_url": "https://robot-trader.onrender.com/dashboard"
+    }
+
+    headers = {
+        "x-api-key": NOWPAYMENTS_API_KEY,
+        "Content-Type": "application/json"
+    }
+
+    # Requête vers l'API NOWPayments
+    response = requests.post("https://api.nowpayments.io/v1/invoice", json=payload, headers=headers)
+    data = response.json()
+
+    # Vérification et redirection
+    if 'invoice_url' in data:
+        return redirect(data['invoice_url'])
+    else:
+        return jsonify({"error": "Erreur lors de la création du paiement", "details": data}), 400
 # --- Page retrait (client seulement) ---
 @app.route('/withdraw', methods=['GET', 'POST'])
 def withdraw():
