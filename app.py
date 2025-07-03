@@ -20,14 +20,13 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-this-in-env")
 
 # --- Config MongoDB ---
-app.config["MONGO_URI"] = os.getenv("MONGO_URI", "")
+app.config["MONGO_URI"] = "mongodb+srv://brendayologaza4:victoire47@cluster0.mongodb.net/Robottrader?retryWrites=true&w=majority"
 
 # --- Connexion MongoDB ---
-try:
+
     mongo = PyMongo(app)
     db = mongo.db
-except Exception as e:
-    print(f"Erreur de connexion MongoDB : {e}")
+
 
 # --- Authentification protégée ---
 def login_required(f):
