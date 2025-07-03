@@ -131,54 +131,53 @@ def config_api():
 # --- Dashboard admin et client ---
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
-    current_user = db.users.find_one({"username": session['username']})
-    if current_user is None:
-        # Utilisateur introuvable, logout ou redirection
-        session.pop('username', None)
-        return redirect(url_for('login'))
-
-    role = current_user.get('role', 'client')  # Par défaut client
-
-    if role == 'admin':
-        users = list(db.users.find({"role": "client"}))
-        
-        try:
-            withdraw_requests = list(db.withdraw_requests.find().sort('date', -1))
-        except Exception as e:
-            withdraw_requests = []
-            print("Erreur récupération demandes retrait :", e)
-        
-        return render_template("dashboard.html", 
-                               is_admin=True, 
-                               users=users, 
-                               admin=current_user, 
-                               withdraw_requests=withdraw_requests)
-
-    # Partie client
-    balance = current_user.get('balance', 0)
-
-    # Vérifier que numpy est bien importé en haut du fichier
     try:
+        if 'username' not in session:
+            return redirect(url_for('login'))
+
+        current_user = db.users.find_one({"username": session['username']})
+        if current_user is None:
+            session.pop('username', None)
+            return redirect(url_for('login'))
+
+        role = current_user.get('role', 'client')
+
+        if role == 'admin':
+            users = list(db.users.find({"role": "client"}))
+            
+            try:
+                withdraw_requests = list(db.withdraw_requests.find().sort('date', -1))
+            except Exception as e:
+                withdraw_requests = []
+                print("Erreur récupération demandes retrait :", e)
+            
+            return render_template("dashboard.html", 
+                                   is_admin=True, 
+                                   users=users, 
+                                   admin=current_user, 
+                                   withdraw_requests=withdraw_requests)
+
+        # Partie client
+        balance = current_user.get('balance', 0)
+
         import numpy as np
         fake_growth = [round(balance * (1 + np.random.uniform(-0.02, 0.05)), 2) for _ in range(10)]
+
+        dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%d-%m') for i in reversed(range(10))]
+
+        performance = round(fake_growth[-1] - fake_growth[0], 2) if len(fake_growth) >= 2 else 0
+
+        return render_template("dashboard.html",
+                               is_admin=False,
+                               username=current_user['username'],
+                               balance=balance,
+                               chart_labels=dates,
+                               chart_data=fake_growth,
+                               performance=performance)
+
     except Exception as e:
-        fake_growth = [balance] * 10  # fallback simple
-        print("Erreur numpy ou génération données:", e)
-
-    dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%d-%m') for i in reversed(range(10))]
-
-    performance = round(fake_growth[-1] - fake_growth[0], 2) if len(fake_growth) >= 2 else 0
-
-    return render_template("dashboard.html",
-                           is_admin=False,
-                           username=current_user['username'],
-                           balance=balance,
-                           chart_labels=dates,
-                           chart_data=fake_growth,
-                           performance=performance)
+        print("Erreur dans dashboard:", e)
+        return "Erreur interne serveur, regarde la console"
 # --- Modifier solde client (admin) ---
 @app.route('/update_balance', methods=['POST'])
 def update_balance():
