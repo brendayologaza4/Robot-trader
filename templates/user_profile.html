@@ -3,24 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <title>Profil de {{ username }}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Reset & base */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f1116 0%, #1a1d24 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        a {
+            text-decoration: none;
+            color: #00ffe7;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            align-self: flex-start;
+            transition: color 0.3s ease;
+            border: 2px solid #00ffe7;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            box-shadow: 0 0 8px #00ffe7;
+        }
+        a:hover {
+            color: #00ffb0;
+            border-color: #00ffb0;
+            box-shadow: 0 0 15px #00ffb0;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #12151c, #1b1f28);
+            border-radius: 12px;
+            box-shadow:
+                0 0 8px #00ffb0,
+                inset 0 0 12px #007755;
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            color: #00ffb0;
+        }
+
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-bottom: 2px solid #00ffb0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow:
+                0 0 5px #00ffb0,
+                0 0 10px #00ffb0;
+        }
+
+        .card-body p {
+            font-size: 1.2rem;
+            margin: 0.8rem 0;
+            color: #a0f0d8;
+            text-shadow: 0 0 5px #00ffb0;
+        }
+
+        /* Chart container */
+        canvas#growthChart {
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            box-shadow:
+                0 0 12px #00ffe7,
+                inset 0 0 8px #003322;
+            background: #12161d;
+            width: 100% !important;
+            max-height: 300px;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container py-4">
+<body>
 
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mb-4">← Retour au Dashboard</a>
+    <a href="{{ url_for('dashboard') }}">← Retour au Dashboard</a>
 
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Interface du client : {{ username }}</h4>
-            </div>
-            <div class="card-body">
-                <p><strong>Solde :</strong> {{ balance }} USDT</p>
-                <p><strong>Performance simulée :</strong> {{ performance }} USDT</p>
+    <div class="card">
+        <div class="card-header">
+            Interface du client : {{ username }}
+        </div>
+        <div class="card-body">
+            <p><strong>Solde :</strong> {{ balance }} USDT</p>
+            <p><strong>Performance simulée :</strong> {{ performance }} USDT</p>
 
-                <canvas id="growthChart" height="100"></canvas>
-            </div>
+            <canvas id="growthChart" height="100"></canvas>
         </div>
     </div>
 
@@ -33,21 +116,64 @@
                 datasets: [{
                     label: 'Évolution du portefeuille',
                     data: {{ chart_data|tojson }},
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 2,
+                    backgroundColor: 'rgba(0, 255, 179, 0.2)',
+                    borderColor: 'rgba(0, 255, 179, 1)',
+                    borderWidth: 3,
                     fill: true,
-                    tension: 0.3
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgba(0, 255, 179, 1)',
+                    pointHoverRadius: 6,
+                    hoverBorderWidth: 2,
                 }]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
+                    x: {
+                        grid: {
+                            color: '#002211',
+                        },
+                        ticks: {
+                            color: '#00ffb0',
+                            font: {weight: '600'},
+                        }
+                    },
                     y: {
-                        beginAtZero: false
+                        beginAtZero: false,
+                        grid: {
+                            color: '#002211',
+                        },
+                        ticks: {
+                            color: '#00ffb0',
+                            font: {weight: '600'},
+                        }
                     }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#00ffb0',
+                            font: {weight: '700', size: 14}
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#00ffb0',
+                        titleColor: '#000',
+                        bodyColor: '#000',
+                        cornerRadius: 6,
+                        padding: 10,
+                        displayColors: false,
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    intersect: false
                 }
             }
         });
     </script>
+
 </body>
 </html>
