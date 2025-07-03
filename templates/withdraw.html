@@ -1,78 +1,207 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Demande de Retrait - Robot Trader</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f1116;
-            color: #e0e0e0;
+        /* Reset */
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0c12, #121619);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
         header {
-            background: #1a1d24;
-            color: #00ff9d;
-            padding: 1rem 2rem;
+            background: linear-gradient(90deg, #00ff9d, #00b3cc);
+            color: #0a0c12;
+            padding: 1.25rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 1.5rem;
+            font-size: 1.75rem;
+            font-weight: 700;
+            text-shadow: 0 0 8px #00ff9d;
+            box-shadow: 0 2px 10px rgba(0, 255, 157, 0.6);
+            user-select: none;
         }
+
         .logout-btn {
-            background-color: #ff4d4f;
-            color: white;
+            background: #ff4d4f;
+            background: linear-gradient(45deg, #ff4d4f, #b83031);
             border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            color: white;
             cursor: pointer;
+            box-shadow: 0 0 10px #ff4d4f;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
         }
+        .logout-btn:hover {
+            background: linear-gradient(45deg, #b83031, #ff4d4f);
+            box-shadow: 0 0 20px #ff4d4f;
+        }
+
         .container {
             max-width: 600px;
-            margin: 3rem auto;
-            padding: 2rem;
-            background: #1a1d24;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,255,157,0.1);
+            margin: 3rem auto 5rem auto;
+            padding: 2.5rem 3rem;
+            background: #121619;
+            border-radius: 18px;
+            box-shadow:
+                0 0 15px rgba(0, 255, 157, 0.25),
+                inset 0 0 20px #002f30;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
         }
+        .container::before {
+            content: "";
+            position: absolute;
+            top: -3px; left: -3px; right: -3px; bottom: -3px;
+            border-radius: 20px;
+            background: linear-gradient(45deg, #00ff9d, #00b3cc, #00ff9d, #00b3cc);
+            background-size: 400% 400%;
+            animation: neonGlow 15s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes neonGlow {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
         h2 {
             color: #00ff9d;
-            margin-bottom: 1rem;
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 8px #00ff9d;
         }
+
         label {
             display: block;
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
+            margin-top: 1.3rem;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            text-shadow: 0 0 3px #00ff9d44;
+            color: #a5f3d1;
         }
-        input, select {
+
+        input,
+        select {
             width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #333;
-            background: #111;
-            color: #fff;
-        }
-        button {
-            margin-top: 1.5rem;
-            width: 100%;
-            padding: 12px;
-            background-color: #00ff9d;
-            border: none;
-            border-radius: 5px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1.8px solid #004d40;
+            background: #0a0c12;
+            color: #00ff9d;
+            font-weight: 600;
             font-size: 1rem;
-            color: #000;
+            outline-offset: 2px;
+            outline-color: transparent;
+            box-shadow: inset 0 0 6px #00ff9d88;
+            transition: border-color 0.3s ease, outline-color 0.3s ease;
+        }
+        input:focus,
+        select:focus {
+            border-color: #00ff9d;
+            outline-color: #00ff9d;
+            background: #061211;
+            box-shadow: 0 0 10px #00ff9dcc;
+            color: #b2f7e6;
+        }
+
+        button[type="submit"] {
+            margin-top: 2rem;
+            width: 100%;
+            padding: 16px 0;
+            background: linear-gradient(90deg, #00ff9d, #00b3cc);
+            border: none;
+            border-radius: 18px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0a0c12;
             cursor: pointer;
+            box-shadow:
+                0 0 10px #00ff9d,
+                0 0 20px #00b3cc;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            transition: box-shadow 0.4s ease, background 0.4s ease;
+            user-select: none;
         }
+        button[type="submit"]:hover {
+            background: linear-gradient(90deg, #00b3cc, #00ff9d);
+            box-shadow:
+                0 0 18px #00b3cc,
+                0 0 35px #00ff9d;
+        }
+
         .message {
-            margin-top: 1rem;
+            margin-top: 1.5rem;
             text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-shadow: 0 0 8px;
+            user-select: none;
         }
-        .success { color: #00ff9d; }
-        .error { color: #ff4d4f; }
+        .success {
+            color: #00ff9d;
+            text-shadow: 0 0 12px #00ff9d;
+        }
+        .error {
+            color: #ff4d4f;
+            text-shadow: 0 0 12px #ff4d4f;
+        }
+
+        /* Sections masquées */
+        #card_section,
+        #iban_section,
+        #id_section {
+            margin-top: 1.5rem;
+            padding: 1.2rem;
+            background: linear-gradient(145deg, #0d1116, #142029);
+            border-radius: 14px;
+            box-shadow: inset 0 0 15px #002f30;
+            border: 1.5px solid #004d40;
+            transition: all 0.4s ease;
+        }
+
+        /* Placeholder color */
+        input::placeholder {
+            color: #004d40;
+            font-weight: 600;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0c12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00ff9d;
+            border-radius: 10px;
+        }
     </style>
+
     <script>
         function toggleWithdrawalType() {
             const type = document.getElementById("withdraw_type").value;
@@ -102,14 +231,14 @@
     <a href="{{ url_for('logout') }}"><button class="logout-btn">Déconnexion</button></a>
 </header>
 
-<div class="container">
+<div class="container" role="main" aria-label="Formulaire de demande de retrait">
     <h2>Retirer des fonds</h2>
-    <form method="POST" onsubmit="return validateForm()">
+    <form method="POST" onsubmit="return validateForm()" novalidate>
         <label for="amount">Montant à retirer (USDT) :</label>
-        <input type="number" name="amount" id="amount" min="1" step="0.01" required>
+        <input type="number" name="amount" id="amount" min="1" step="0.01" required placeholder="Ex: 100.00" autocomplete="off" />
 
         <label for="withdraw_type">Méthode de retrait :</label>
-        <select name="mode" id="withdraw_type" onchange="toggleWithdrawalType()" required>
+        <select name="mode" id="withdraw_type" onchange="toggleWithdrawalType()" required aria-required="true" aria-describedby="methodHelp">
             <option value="">-- Choisissez une méthode --</option>
             <option value="card">Carte bancaire</option>
             <option value="bank">Virement bancaire (IBAN)</option>
@@ -119,43 +248,43 @@
         <!-- Section carte bancaire -->
         <div id="card_section" style="display:none;">
             <label for="card_number">Numéro de carte :</label>
-            <input type="text" name="card_number" id="card_number">
+            <input type="text" name="card_number" id="card_number" placeholder="0000 0000 0000 0000" autocomplete="off" />
 
             <label for="card_name">Nom sur la carte :</label>
-            <input type="text" name="card_name" id="card_name">
+            <input type="text" name="card_name" id="card_name" placeholder="Nom tel qu'inscrit sur la carte" autocomplete="off" />
 
             <label for="card_expiry">Date d'expiration :</label>
-            <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/AA">
+            <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/AA" autocomplete="off" />
 
             <label for="card_cvc">Code CVC :</label>
-            <input type="text" name="card_cvv" id="card_cvc">
+            <input type="text" name="card_cvv" id="card_cvc" placeholder="123" autocomplete="off" />
         </div>
 
         <!-- Section IBAN (désactivé) -->
         <div id="iban_section" style="display:none;">
             <label for="iban">IBAN :</label>
-            <input type="text" name="iban" id="iban" disabled>
+            <input type="text" name="iban" id="iban" disabled placeholder="Indisponible" autocomplete="off" />
 
             <label for="bank_name">Nom de la banque :</label>
-            <input type="text" name="bank_name" id="bank_name" disabled>
+            <input type="text" name="bank_name" id="bank_name" disabled placeholder="Indisponible" autocomplete="off" />
         </div>
 
         <!-- Section identification bancaire -->
         <div id="id_section" style="display:none;">
             <label for="bank_name_id">Nom de la banque :</label>
-            <input type="text" name="bank_name_id" id="bank_name_id">
+            <input type="text" name="bank_name_id" id="bank_name_id" autocomplete="off" />
 
             <label for="bank_identifiers">Identifiant bancaire (9 à 11 chiffres) :</label>
-            <input type="text" name="bank_identifiers" id="bank_identifiers">
+            <input type="text" name="bank_identifiers" id="bank_identifiers" autocomplete="off" />
 
             <label for="bank_code_id">Code d’identification :</label>
-            <input type="text" name="bank_code_id" id="bank_code_id">
+            <input type="text" name="bank_code_id" id="bank_code_id" autocomplete="off" />
         </div>
 
-        <button type="submit">Envoyer la demande</button>
+        <button type="submit" aria-label="Envoyer la demande de retrait">Envoyer la demande</button>
 
         {% if message %}
-            <div class="message {{ 'success' if success else 'error' }}">
+            <div class="message {{ 'success' if success else 'error' }}" role="alert" aria-live="polite">
                 {{ message }}
             </div>
         {% endif %}
