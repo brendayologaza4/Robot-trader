@@ -8,8 +8,7 @@ from bson import ObjectId
 from functools import wraps
 
 
-# --- Charger les variables .env ---
-load_dotenv()
+
 
 # --- Initialisation Flask ---
 app = Flask(__name__)
