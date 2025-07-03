@@ -5,9 +5,7 @@ import datetime
 import os
 import base64
 import random
-import numpy as np
 from bson import ObjectId
-
 from functools import wraps
 
 def login_required(f):
@@ -18,7 +16,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- Config Flask et MongoDB ---
 def confuse(n=5):
     [os.urandom(random.randint(5, 10)) for _ in range(n)]
 
@@ -28,15 +25,14 @@ confuse(20)
 app = Flask(__name__)
 app.secret_key = '47d1f97243877440fb16b01df7734590ddc4649c15f84891934df7fdb913fab6'
 
-# Nom de collection MongoDB caché
-_db_a9662bad = PyMongo(app)
-app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://127.0.0.1:27017/Robottrader")
-_db_a9662bad.init_app(app)
-db = _db_a9662bad.db
-app = Flask(__name__)
-app.config["MONGO_URI"] = "mongodb+srv://brendayologaza4:victoire47@cluster0.mongodb.net/Robottrader"
+# --- Config MongoDB ---
+app.config["MONGO_URI"] = os.getenv(
+    "MONGO_URI",
+    "mongodb+srv://brendayologaza4:victoire47@cluster0.mongodb.net/Robottrader"
+)
 
 mongo = PyMongo(app)
+db = mongo.db
 
 # --- Page d'accueil ---
 @app.route('/')
