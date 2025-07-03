@@ -6,6 +6,10 @@ import os
 import random
 from bson import ObjectId
 from functools import wraps
+import requests
+
+
+NOWPAYMENTS_API_KEY = "CADPW8X-HAJ4NE1-GESD40K-BE8YE8E"
 
 
 
@@ -197,10 +201,7 @@ def user_profile(username):
                            chart_labels=dates,
                            chart_data=fake_growth,
                            performance=performance)
-import requests
-from flask import Flask, redirect, session, jsonify
 
-NOWPAYMENTS_API_KEY = "CADPW8X-HAJ4NE1-GESD40K-BE8YE8E"
 
 @app.route('/create_payment')
 def create_payment():
