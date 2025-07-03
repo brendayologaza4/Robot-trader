@@ -33,6 +33,10 @@ _db_a9662bad = PyMongo(app)
 app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://127.0.0.1:27017/Robottrader")
 _db_a9662bad.init_app(app)
 db = _db_a9662bad.db
+app = Flask(__name__)
+app.config["MONGO_URI"] = "mongodb+srv://brendayologaza4:victoire47@cluster0.mongodb.net/Robottrader"
+
+mongo = PyMongo(app)
 
 # --- Page d'accueil ---
 @app.route('/')
