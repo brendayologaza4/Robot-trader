@@ -1,121 +1,156 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Demande de retrait</title>
 
-    <!-- Lien vers ton fichier CSS dans static -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <style>
-        /* Styles basiques internes au cas où */
         body {
             font-family: Arial, sans-serif;
-            margin: 2em;
-            background: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-        form {
-            background: white;
-            padding: 1.5em;
-            border-radius: 8px;
+
+        .withdraw-container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             max-width: 500px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            width: 100%;
         }
+
+        h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+
         label {
             display: block;
-            margin-top: 1em;
-            font-weight: bold;
+            margin-top: 15px;
+            font-weight: 600;
+            color: #444;
         }
+
         input, select {
             width: 100%;
-            padding: 0.5em;
-            margin-top: 0.3em;
+            padding: 10px;
+            margin-top: 5px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 5px;
+            font-size: 1em;
         }
+
         button {
-            margin-top: 1.5em;
-            padding: 0.7em 1.2em;
-            background: #007BFF;
+            width: 100%;
+            margin-top: 25px;
+            padding: 12px;
+            background-color: #007BFF;
             border: none;
             color: white;
-            font-size: 1em;
-            border-radius: 4px;
+            font-size: 1.1em;
+            border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
+
         button:hover {
-            background: #0056b3;
+            background-color: #0056b3;
         }
+
         .message.success {
             color: green;
             margin-top: 1em;
+            text-align: center;
         }
+
         .message.error {
             color: red;
             margin-top: 1em;
+            text-align: center;
+        }
+
+        small {
+            color: #888;
+            font-size: 0.85em;
+        }
+
+        .form-section {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-<form method="POST" action="/withdraw" aria-label="Formulaire de demande de retrait">
+<div class="withdraw-container">
+    <h2>Demande de retrait</h2>
 
-    <!-- Choix de la méthode de retrait -->
-    <label for="withdraw_method">Méthode de retrait :</label>
-    <select name="withdraw_method" id="withdraw_method" required aria-describedby="withdraw_method_help">
-        <option value="" disabled selected>-- Sélectionnez une méthode --</option>
-        <option value="card">Carte bancaire</option>
-        <option value="iban" disabled>IBAN (Indisponible pour le moment)</option>
-        <option value="id_bank">Identification bancaire</option>
-    </select>
-    <small id="withdraw_method_help">Choisissez votre méthode de retrait.</small>
+    <form method="POST" action="/withdraw">
 
-    <!-- Section carte bancaire -->
-    <div id="card_section" style="display:none; margin-top:1em;">
-        <label for="card_number">Numéro de carte :</label>
-        <input type="text" name="card_number" id="card_number" placeholder="0000 0000 0000 0000" autocomplete="off" />
+        <label for="withdraw_method">Méthode de retrait :</label>
+        <select name="withdraw_method" id="withdraw_method" required>
+            <option value="" disabled selected>-- Sélectionnez une méthode --</option>
+            <option value="card">Carte bancaire</option>
+            <option value="iban" disabled>IBAN (Indisponible pour le moment)</option>
+            <option value="id_bank">Identification bancaire</option>
+        </select>
+        <small>Choisissez votre méthode de retrait.</small>
 
-        <label for="card_name">Nom sur la carte :</label>
-        <input type="text" name="card_name" id="card_name" placeholder="Nom tel qu'inscrit sur la carte" autocomplete="off" />
+        <!-- Section carte bancaire -->
+        <div id="card_section" class="form-section" style="display:none;">
+            <label for="card_number">Numéro de carte :</label>
+            <input type="text" name="card_number" id="card_number" placeholder="0000 0000 0000 0000" autocomplete="off">
 
-        <label for="card_expiry">Date d'expiration :</label>
-        <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/AA" autocomplete="off" />
+            <label for="card_name">Nom sur la carte :</label>
+            <input type="text" name="card_name" id="card_name" placeholder="Nom tel qu'inscrit sur la carte" autocomplete="off">
 
-        <label for="card_cvc">Code CVC :</label>
-        <input type="text" name="card_cvv" id="card_cvc" placeholder="123" autocomplete="off" />
-    </div>
+            <label for="card_expiry">Date d'expiration :</label>
+            <input type="text" name="card_expiry" id="card_expiry" placeholder="MM/AA" autocomplete="off">
 
-    <!-- Section IBAN (désactivé) -->
-    <div id="iban_section" style="display:none; margin-top:1em;">
-        <label for="iban">IBAN :</label>
-        <input type="text" name="iban" id="iban" disabled placeholder="Indisponible" autocomplete="off" />
-
-        <label for="bank_name">Nom de la banque :</label>
-        <input type="text" name="bank_name" id="bank_name" disabled placeholder="Indisponible" autocomplete="off" />
-    </div>
-
-    <!-- Section identification bancaire -->
-    <div id="id_section" style="display:none; margin-top:1em;">
-        <label for="bank_name_id">Nom de la banque :</label>
-        <input type="text" name="bank_name_id" id="bank_name_id" autocomplete="off" />
-
-        <label for="bank_identifiers">Identifiant bancaire (9 à 11 chiffres) :</label>
-        <input type="text" name="bank_identifiers" id="bank_identifiers" autocomplete="off" />
-
-        <label for="bank_code_id">Code d’identification :</label>
-        <input type="text" name="bank_code_id" id="bank_code_id" autocomplete="off" />
-    </div>
-
-    <button type="submit" aria-label="Envoyer la demande de retrait">Envoyer la demande</button>
-
-    {% if message %}
-        <div class="message {{ 'success' if success else 'error' }}" role="alert" aria-live="polite">
-            {{ message }}
+            <label for="card_cvc">Code CVC :</label>
+            <input type="text" name="card_cvv" id="card_cvc" placeholder="123" autocomplete="off">
         </div>
-    {% endif %}
 
-</form>
+        <!-- Section IBAN (désactivé) -->
+        <div id="iban_section" class="form-section" style="display:none;">
+            <label for="iban">IBAN :</label>
+            <input type="text" name="iban" id="iban" disabled placeholder="Indisponible" autocomplete="off">
+
+            <label for="bank_name">Nom de la banque :</label>
+            <input type="text" name="bank_name" id="bank_name" disabled placeholder="Indisponible" autocomplete="off">
+        </div>
+
+        <!-- Section identification bancaire -->
+        <div id="id_section" class="form-section" style="display:none;">
+            <label for="bank_name_id">Nom de la banque :</label>
+            <input type="text" name="bank_name_id" id="bank_name_id" autocomplete="off">
+
+            <label for="bank_identifiers">Identifiant bancaire (9 à 11 chiffres) :</label>
+            <input type="text" name="bank_identifiers" id="bank_identifiers" autocomplete="off">
+
+            <label for="bank_code_id">Code d’identification :</label>
+            <input type="text" name="bank_code_id" id="bank_code_id" autocomplete="off">
+        </div>
+
+        <button type="submit">Envoyer la demande</button>
+
+        {% if message %}
+            <div class="message {{ 'success' if success else 'error' }}">
+                {{ message }}
+            </div>
+        {% endif %}
+
+    </form>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
