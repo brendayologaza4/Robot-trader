@@ -151,54 +151,37 @@
 </div>
 
 {% if not is_admin and balance > 0 %}
-<!-- Le canvas du graphique -->
-<div style="margin-bottom: 20px;">
-    <canvas id="performanceChart" width="400" height="200" style="background-color: white;"></canvas>
-    <div id="valeurAction" style="margin-top: 10px; font-weight: bold;"></div>
-    <div id="performance" style="margin-top: 5px; font-weight: bold;"></div>
-</div>
-
-<!-- Ton script du graphique -->
 <script>
-    const labels = Array.from({length: 20}, (_, i) => `${-19 + i}`);
-    let initialBalance = {{ balance }};
-    let data = Array(20).fill(initialBalance);
-    
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    const chart = new Chart(ctx, {
+    const labels = [...Array(20)].map((_, i) => `-${19 - i}`);
+    const initialBalance = {{ balance }};
+    let data = [initialBalance];
+    const chart = new Chart(document.getElementById('performanceChart'), {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Évolution valeur actions',
+                label: 'Évolution du solde',
                 data: data,
-                borderColor: '#00ff9d',
-                backgroundColor: 'rgba(0,255,157,0.1)',
+                borderColor: 'rgb(46, 204, 113)',
+                backgroundColor: 'rgba(46, 204, 113, 0.2)',
                 fill: true,
                 tension: 0.3
             }]
         },
         options: {
             animation: false,
-            responsive: true,
             scales: {
-                y: { beginAtZero: false, ticks: { color: "#888" } },
-                x: { ticks: { color: "#888" } }
-            },
-            plugins: {
-                legend: { labels: { color: "#ccc" } }
+                y: { beginAtZero: false }
             }
         }
     });
 
-    function updateChart() {
-        const last = data[data.length - 1];
-        const variation = last * (Math.random() * 0.02 - 0.01); // +/- 1% variation
-        const newVal = +(last + variation).toFixed(2);
-        
+      function updateChart() {
+        let last = data[data.length - 1];
+        let variation = last * (Math.random() * 0.015 - 0.0075);
+        let newVal = +(last + variation).toFixed(2);
         data.push(newVal);
         if (data.length > 20) data.shift();
-
         chart.data.datasets[0].data = data;
         chart.update();
 
