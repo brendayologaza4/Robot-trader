@@ -321,6 +321,14 @@ Intègre le même style à Dashboard
 </div>
 
 {% if not is_admin and balance > 0 %}
+<!-- Le canvas du graphique -->
+<div style="margin-bottom: 20px;">
+    <canvas id="performanceChart" width="400" height="200" style="background-color: white;"></canvas>
+    <div id="valeurAction" style="margin-top: 10px; font-weight: bold;"></div>
+    <div id="performance" style="margin-top: 5px; font-weight: bold;"></div>
+</div>
+
+<!-- Ton script du graphique -->
 <script>
     const labels = Array.from({length: 20}, (_, i) => `${-19 + i}`);
     let initialBalance = {{ balance }};
