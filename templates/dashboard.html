@@ -328,46 +328,84 @@
                     borderColor: 'rgb(46, 204, 113)',
                     backgroundColor: 'rgba(46, 204, 113, 0.2)',
                     fill: true,
-                    tension: 0.3
+                    tension:                    tension: 0.3,
+                    pointRadius: 0,
+                    borderWidth: 2
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
                 animation: false,
                 scales: {
-                    y: { beginAtZero: false }
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            color: 'white'
+                        },
+                        grid: {
+                            color: 'rgba(255,255,255,0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'white'
+                        },
+                        grid: {
+                            color: 'rgba(255,255,255,0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
                 }
             }
         });
 
-        function updateChart() {
-            let last = data[data.length - 1];
-            let variation = last * (Math.random() * 0.015 - 0.0075);
-            let newVal = +(last + variation).toFixed(2);
-            data.push(newVal);
+        // Fonction pour simuler l'évolution du solde (simple variation aléatoire)
+        function simulateNextValue(currentValue) {
+            // Variation aléatoire entre -2% et +2%
+            const variationPercent = (Math.random() * 4) - 2;
+            const newValue = currentValue + (currentValue * variationPercent / 100);
+            return Math.max(newValue, 0);
+        }
+
+        // Mise à jour du graphique toutes les secondes (par exemple)
+        setInterval(() => {
+            let lastValue = data[data.length - 1];
+            let nextValue = simulateNextValue(lastValue);
+            data.push(nextValue);
             if (data.length > 20) data.shift();
+
             chart.data.datasets[0].data = data;
             chart.update();
 
-            const performance = ((newVal - initialBalance) / initialBalance * 100).toFixed(2);
+            // Mise à jour de la performance en pourcentage
+            const perfPercent = ((nextValue - initialBalance) / initialBalance) * 100;
             const perfEl = document.getElementById('performance');
-            const valeurAction = document.getElementById('valeurAction');
+            perfEl.textContent = `Performance : ${perfPercent >= 0 ? '+' : ''}${perfPercent.toFixed(2)}%`;
+            perfEl.className = perfPercent >= 0 ? 'positive' : 'negative';
 
-            valeurAction.innerHTML = `Valeur d'action : <strong>${newVal.toFixed(2)} USDT</strong>`;
-            perfEl.textContent = `Performance : ${performance > 0 ? '+' : ''}${performance}%`;
-            perfEl.className = performance >= 0 ? 'positive' : 'negative';
-        }
+            // Mise à jour de la valeur d'action affichée
+            document.getElementById('valeurAction').innerHTML = `Valeur d'action : <strong>${nextValue.toFixed(2)} USDT</strong>`;
+        }, 1000);
 
-        setInterval(updateChart, 3000);
-    </script>
-    {% endif %}
-
-    <script>
+        // Sidebar toggle
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.style.left = sidebar.style.left === '0px' ? '-250px' : '0px';
+            if (sidebar.style.left === '0px') {
+                sidebar.style.left = '-250px';
+            } else {
+                sidebar.style.left = '0px';
+            }
         }
     </script>
+    {% endif %}
 </body>
 </html>
