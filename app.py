@@ -15,7 +15,7 @@ NOWPAYMENTS_API_KEY = "CADPW8X-HAJ4NE1-GESD40K-BE8YE8E"
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-this-in-env")
 # --- Config MongoDB ---
-app.config["MONGO_URI"] = "mongodb+srv://brendayologaza4:victoire47@cluster0.mongodb.net/Robottrader?retryWrites=true&w=majority"
+app.config["MONGO_URI"] = "mongodb+srv://brendayologaza4:victoire47@cluster0.y8lgrzd.mongodb.net/Robottrader?retryWrites=true&w=majority&appName=Cluster0"
 mongo = PyMongo(app)
 db = mongo.db
 
