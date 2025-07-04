@@ -3,47 +3,46 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
 }
 
-body, html {
+html, body {
     height: 100%;
     width: 100%;
-    font-family: 'Poppins', sans-serif;
-    color: #ffffff;
     overflow-x: hidden;
 }
 
-/* Fond de l'image + filtre sombre */
+/* Arrière-plan futuriste */
 body {
-    background-image: url("https://i.postimg.cc/Jt6PsJ1G/IMG-6002.jpg");
+background-image: url("https://i.postimg.cc/Jt6PsJ1G/IMG-6002.jpg");
     background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
     position: relative;
+    color: #fff;
 }
 
-/* Overlay sombre par-dessus l'image pour améliorer la lisibilité */
+/* Overlay sombre avec filtre violet/bleu et flou */
 body::before {
     content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
+    position: absolute;
+    top: 0; left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6); /* réglage de l'obscurité ici */
-    z-index: -1;
+    background: linear-gradient(180deg, rgba(20,10,40,0.8) 0%, rgba(10,0,30,0.9) 100%);
+    backdrop-filter: blur(4px);
+    z-index: 0;
 }
 
-/* Conteneur central */
+/* Contenu */
 .container {
+    position: relative;
+    z-index: 1;
     text-align: center;
     padding-top: 15vh;
     padding-left: 5%;
     padding-right: 5%;
 }
 
-/* Logo et titres */
+/* Titre principal */
 .logo {
     font-size: 40px;
     font-weight: bold;
@@ -51,6 +50,7 @@ body::before {
     margin-bottom: 10px;
 }
 
+/* Slogan futuriste en dégradé */
 .subtitle {
     font-size: 22px;
     font-weight: 600;
@@ -60,14 +60,14 @@ body::before {
     margin-bottom: 20px;
 }
 
-/* Texte de description */
+/* Description texte */
 .description {
     font-size: 16px;
     color: #ddd;
     margin-bottom: 40px;
 }
 
-/* Boutons Connexion / Inscription */
+/* Boutons futuristes */
 .button-container {
     display: flex;
     justify-content: center;
@@ -83,12 +83,12 @@ body::before {
     transition: all 0.3s;
     background: linear-gradient(45deg, #0af, #a0f);
     color: white;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 
 .button-container a:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
 }
 
 /* Responsive */
