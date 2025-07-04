@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -8,7 +7,52 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  
+
+    <style>
+        /* Ajout style responsive directement ici pour simplifier */
+
+        /* Scroll horizontal pour tous les tableaux */
+        .table-container, .crypto-table, .card-body {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Graphe responsive */
+        #performanceChart {
+            width: 100%;
+            min-height: 250px;
+            height: 40vh;
+            margin-top: 30px;
+            background-color: #0f1117;
+        }
+
+        /* Media queries téléphone */
+        @media screen and (max-width: 768px) {
+            .card, .crypto-table, .card-body {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 600px;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -32,37 +76,39 @@
         <div class="card">
             <h2>Bienvenue, Admin {{ admin.username }}</h2>
             <p>Configurer ou modifier les soldes des clients :</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Utilisateur</th>
-                        <th>Solde actuel</th>
-                        <th>Nouveau solde</th>
-                        <th>Action</th>
-                        <th>Profil</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                    <tr>
-                        <form action="{{ url_for('update_balance') }}" method="POST">
-                            <td>{{ user.username }}</td>
-                            <td>{{ user.balance }}</td>
-                            <td>
-                                <input type="hidden" name="username" value="{{ user.username }}">
-                                <input type="number" step="0.01" name="new_balance" required>
-                            </td>
-                            <td><button type="submit">Modifier</button></td>
-                            <td>
-                                <a href="{{ url_for('user_profile', username=user.username) }}">
-                                    <button type="button">Voir</button>
-                                </a>
-                            </td>
-                        </form>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Utilisateur</th>
+                            <th>Solde actuel</th>
+                            <th>Nouveau solde</th>
+                            <th>Action</th>
+                            <th>Profil</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <form action="{{ url_for('update_balance') }}" method="POST">
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.balance }}</td>
+                                <td>
+                                    <input type="hidden" name="username" value="{{ user.username }}">
+                                    <input type="number" step="0.01" name="new_balance" required>
+                                </td>
+                                <td><button type="submit">Modifier</button></td>
+                                <td>
+                                    <a href="{{ url_for('user_profile', username=user.username) }}">
+                                        <button type="button">Voir</button>
+                                    </a>
+                                </td>
+                            </form>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Demandes de retrait -->
@@ -70,7 +116,7 @@
             <div class="card-header">
                 <h5 class="mb-0">Demandes de retrait</h5>
             </div>
-            <div class="card-body table-responsive">
+            <div class="card-body table-container">
                 {% if withdraw_requests %}
                 <table class="table table-bordered table-hover">
                     <thead class="thead-light">
@@ -121,7 +167,7 @@
                 <p><strong>Solde actuel :</strong> {{ balance }} USDT</p>
                 <p id="valeurAction">Valeur d'action : <strong>{{ balance }} USDT</strong></p>
                 <p id="performance" class="positive">Performance : +0.00%</p>
-                <canvas id="performanceChart" width="400" height="200"></canvas>
+                <canvas id="performanceChart"></canvas>
             {% else %}
                 <p>⚠️ Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
                <a href="/create_payment" class="btn btn-success" style="margin-top: 10px;">💰 Déposer de l'argent</a>
@@ -130,22 +176,24 @@
 
         <div class="card crypto-table">
             <h2>Marché des Cryptomonnaies</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Crypto</th>
-                        <th>Prix</th>
-                        <th>Variation 24h</th>
-                        <th>Volume</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>BTC/USDT</td><td>56,320</td><td class="positive">+2.3%</td><td>$18B</td></tr>
-                    <tr><td>ETH/USDT</td><td>3,480</td><td class="negative">-1.2%</td><td>$8.1B</td></tr>
-                    <tr><td>PAXG/USDT</td><td>2,340</td><td class="positive">+0.5%</td><td>$240M</td></tr>
-                    <tr><td>SOL/USDT</td><td>132</td><td class="positive">+4.1%</td><td>$1.5B</td></tr>
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Crypto</th>
+                            <th>Prix</th>
+                            <th>Variation 24h</th>
+                            <th>Volume</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>BTC/USDT</td><td>56,320</td><td class="positive">+2.3%</td><td>$18B</td></tr>
+                        <tr><td>ETH/USDT</td><td>3,480</td><td class="negative">-1.2%</td><td>$8.1B</td></tr>
+                        <tr><td>PAXG/USDT</td><td>2,340</td><td class="positive">+0.5%</td><td>$240M</td></tr>
+                        <tr><td>SOL/USDT</td><td>132</td><td class="positive">+4.1%</td><td>$1.5B</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     {% endif %}
 </div>
@@ -169,6 +217,8 @@
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             animation: false,
             scales: {
                 y: { beginAtZero: false }
@@ -176,7 +226,7 @@
         }
     });
 
-      function updateChart() {
+    function updateChart() {
         let last = data[data.length - 1];
         let variation = last * (Math.random() * 0.015 - 0.0075);
         let newVal = +(last + variation).toFixed(2);
@@ -194,7 +244,7 @@
         perfEl.className = performance >= 0 ? 'positive' : 'negative';
     }
 
-    setInterval(updateChart, 3000); // Mise à jour toutes les 3 secondes
+    setInterval(updateChart, 3000);
 </script>
 {% endif %}
 
