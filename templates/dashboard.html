@@ -2,35 +2,151 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Robot Trader - Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 
     <style>
-        /* Ajout style responsive directement ici pour simplifier */
-
         /* Scroll horizontal pour tous les tableaux */
-        .table-container, .crypto-table, .card-body {
+        .table-container {
             overflow-x: auto;
+            margin-bottom: 1rem;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             min-width: 600px;
+            color: white;
         }
 
         th, td {
-            padding: 10px;
+            padding: 10px 12px;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
 
+        th {
+            background-color: #1a1d29;
+            font-weight: 600;
+        }
+
         tr:last-child td {
             border-bottom: none;
+        }
+
+        tr td:last-child,
+        tr th:last-child {
+            border-right: none;
+        }
+
+        /* Boutons */
+        button {
+            background-color: #2ecc71;
+            border: none;
+            padding: 6px 12px;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #27ae60;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #121417;
+            padding-top: 60px;
+            transition: left 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar a:hover {
+            background-color: #23272a;
+        }
+
+        /* Menu icon */
+        .menu-icon {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            cursor: pointer;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .menu-icon .bar {
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+        }
+
+        /* Header */
+        header {
+            background-color: #181c27;
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 80px auto 40px;
+            padding: 0 20px;
+            color: white;
+        }
+
+        /* Card */
+        .card {
+            background-color: #1f2230;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .positive {
+            color: #2ecc71;
+            font-weight: 600;
+        }
+
+        .negative {
+            color: #e74c3c;
+            font-weight: 600;
         }
 
         /* Graphe responsive */
@@ -40,220 +156,218 @@
             height: 40vh;
             margin-top: 30px;
             background-color: #0f1117;
+            border-radius: 8px;
         }
 
-        /* Media queries téléphone */
+        /* Media queries */
         @media screen and (max-width: 768px) {
-            .card, .crypto-table, .card-body {
-                overflow-x: auto;
-            }
-
             table {
                 min-width: 600px;
+            }
+            .container {
+                margin: 70px 10px 20px;
+            }
+            header {
+                font-size: 1.3rem;
             }
         }
     </style>
 </head>
 <body>
+    <div class="menu-icon" onclick="toggleSidebar()">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </div>
 
-<div class="menu-icon" onclick="toggleSidebar()">
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-</div>
+    <div class="sidebar" id="sidebar">
+        <a href="{{ url_for('withdraw') }}">💳 Retrait</a>
+        <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
+    </div>
 
-<div class="sidebar" id="sidebar">
-    <a href="{{ url_for('withdraw') }}">💳 Retrait</a>
-    <a href="{{ url_for('logout') }}">🚪 Déconnexion</a>
-</div>
+    <header>
+        <span>Dashboard Robot Trader</span>
+    </header>
 
-<header>
-    <span>Dashboard Robot Trader</span>
-</header>
-
-<div class="container">
-    {% if is_admin %}
-        <div class="card">
-            <h2>Bienvenue, Admin {{ admin.username }}</h2>
-            <p>Configurer ou modifier les soldes des clients :</p>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Utilisateur</th>
-                            <th>Solde actuel</th>
-                            <th>Nouveau solde</th>
-                            <th>Action</th>
-                            <th>Profil</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in users %}
-                        <tr>
-                            <form action="{{ url_for('update_balance') }}" method="POST">
-                                <td>{{ user.username }}</td>
-                                <td>{{ user.balance }}</td>
-                                <td>
-                                    <input type="hidden" name="username" value="{{ user.username }}">
-                                    <input type="number" step="0.01" name="new_balance" required>
-                                </td>
-                                <td><button type="submit">Modifier</button></td>
-                                <td>
-                                    <a href="{{ url_for('user_profile', username=user.username) }}">
-                                        <button type="button">Voir</button>
-                                    </a>
-                                </td>
-                            </form>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="container">
+        {% if is_admin %}
+            <div class="card">
+                <h2>Bienvenue, Admin {{ admin.username }}</h2>
+                <p>Configurer ou modifier les soldes des clients :</p>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Solde actuel</th>
+                                <th>Nouveau solde</th>
+                                <th>Action</th>
+                                <th>Profil</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <form action="{{ url_for('update_balance') }}" method="POST">
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.balance }}</td>
+                                    <td>
+                                        <input type="hidden" name="username" value="{{ user.username }}" />
+                                        <input type="number" step="0.01" name="new_balance" required />
+                                    </td>
+                                    <td><button type="submit">Modifier</button></td>
+                                    <td>
+                                        <a href="{{ url_for('user_profile', username=user.username) }}">
+                                            <button type="button">Voir</button>
+                                        </a>
+                                    </td>
+                                </form>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <!-- Demandes de retrait -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Demandes de retrait</h5>
-            </div>
-            <div class="card-body table-container">
-                {% if withdraw_requests %}
-                <table class="table table-bordered table-hover">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>Utilisateur</th>
-                            <th>Méthode</th>
-                            <th>Montant (€)</th>
-                            <th>Date</th>
-                            <th>Statut</th>
-                            <th>Détails</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for req in withdraw_requests %}
-                        <tr>
-                            <td>{{ req.username }}</td>
-                            <td>{{ req.method }}</td>
-                            <td>{{ req.amount }}</td>
-                            <td>
-                                {% if req.date %}
-                                    {{ req.date.strftime('%d-%m-%Y %H:%M') }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>{{ req.status }}</td>
-                            <td>
-                                {% for key, value in req.items() %}
-                                    {% if key not in ['_id', 'username', 'method', 'amount', 'date', 'status'] %}
-                                        <strong>{{ key }}:</strong> {{ value }}<br>
+            <!-- Demandes de retrait -->
+            <div class="card">
+                <h2>Demandes de retrait</h2>
+                <div class="table-container">
+                    {% if withdraw_requests %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Méthode</th>
+                                <th>Montant (€)</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                                <th>Détails</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in withdraw_requests %}
+                            <tr>
+                                <td>{{ req.username }}</td>
+                                <td>{{ req.method }}</td>
+                                <td>{{ req.amount }}</td>
+                                <td>
+                                    {% if req.date %}
+                                        {{ req.date.strftime('%d-%m-%Y %H:%M') }}
+                                    {% else %}
+                                        -
                                     {% endif %}
-                                {% endfor %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                                <td>{{ req.status }}</td>
+                                <td>
+                                    {% for key, value in req.items() %}
+                                        {% if key not in ['_id', 'username', 'method', 'amount', 'date', 'status'] %}
+                                            <strong>{{ key }}:</strong> {{ value }}<br />
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                        <p>Aucune demande de retrait pour le moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <h2>Bienvenue, {{ username }}</h2>
+                {% if balance > 0 %}
+                    <p><strong>Solde actuel :</strong> {{ balance }} USDT</p>
+                    <p id="valeurAction">Valeur d'action : <strong>{{ balance }} USDT</strong></p>
+                    <p id="performance" class="positive">Performance : +0.00%</p>
+                    <canvas id="performanceChart"></canvas>
                 {% else %}
-                    <p>Aucune demande de retrait pour le moment.</p>
+                    <p>⚠️ Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
+                    <a href="/create_payment" class="btn" style="display:inline-block; margin-top: 10px; background-color:#2ecc71; color:white; padding:10px 20px; border-radius:5px; text-decoration:none;">💰 Déposer de l'argent</a>
                 {% endif %}
             </div>
-        </div>
 
-    {% else %}
-        <div class="card">
-            <h2>Bienvenue, {{ username }}</h2>
-            {% if balance > 0 %}
-                <p><strong>Solde actuel :</strong> {{ balance }} USDT</p>
-                <p id="valeurAction">Valeur d'action : <strong>{{ balance }} USDT</strong></p>
-                <p id="performance" class="positive">Performance : +0.00%</p>
-                <canvas id="performanceChart"></canvas>
-            {% else %}
-                <p>⚠️ Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
-               <a href="/create_payment" class="btn btn-success" style="margin-top: 10px;">💰 Déposer de l'argent</a>
-            {% endif %}
-        </div>
-
-        <div class="card crypto-table">
-            <h2>Marché des Cryptomonnaies</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Crypto</th>
-                            <th>Prix</th>
-                            <th>Variation 24h</th>
-                            <th>Volume</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>BTC/USDT</td><td>56,320</td><td class="positive">+2.3%</td><td>$18B</td></tr>
-                        <tr><td>ETH/USDT</td><td>3,480</td><td class="negative">-1.2%</td><td>$8.1B</td></tr>
-                        <tr><td>PAXG/USDT</td><td>2,340</td><td class="positive">+0.5%</td><td>$240M</td></tr>
-                        <tr><td>SOL/USDT</td><td>132</td><td class="positive">+4.1%</td><td>$1.5B</td></tr>
-                    </tbody>
-                </table>
+            <div class="card crypto-table">
+                <h2>Marché des Cryptomonnaies</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Crypto</th>
+                                <th>Prix</th>
+                                <th>Variation 24h</th>
+                                <th>Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>BTC/USDT</td><td>56,320</td><td class="positive">+2.3%</td><td>$18B</td></tr>
+                            <tr><td>ETH/USDT</td><td>3,480</td><td class="negative">-1.2%</td><td>$8.1B</td></tr>
+                            <tr><td>PAXG/USDT</td><td>2,340</td><td class="positive">+0.5%</td><td>$240M</td></tr>
+                            <tr><td>SOL/USDT</td><td>132</td><td class="positive">+4.1%</td><td>$1.5B</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-    {% endif %}
-</div>
+        {% endif %}
+    </div>
 
-{% if not is_admin and balance > 0 %}
-<script>
-    const labels = [...Array(20)].map((_, i) => `-${19 - i}`);
-    const initialBalance = {{ balance }};
-    let data = [initialBalance];
-    const chart = new Chart(document.getElementById('performanceChart'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Évolution du solde',
-                data: data,
-                borderColor: 'rgb(46, 204, 113)',
-                backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            scales: {
-                y: { beginAtZero: false }
+    {% if not is_admin and balance > 0 %}
+    <script>
+        const labels = [...Array(20)].map((_, i) => `-${19 - i}`);
+        const initialBalance = {{ balance }};
+        let data = [initialBalance];
+        const chart = new Chart(document.getElementById('performanceChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Évolution du solde',
+                    data: data,
+                    borderColor: 'rgb(46, 204, 113)',
+                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    y: { beginAtZero: false }
+                }
             }
+        });
+
+        function updateChart() {
+            let last = data[data.length - 1];
+            let variation = last * (Math.random() * 0.015 - 0.0075);
+            let newVal = +(last + variation).toFixed(2);
+            data.push(newVal);
+            if (data.length > 20) data.shift();
+            chart.data.datasets[0].data = data;
+            chart.update();
+
+            const performance = ((newVal - initialBalance) / initialBalance * 100).toFixed(2);
+            const perfEl = document.getElementById('performance');
+            const valeurAction = document.getElementById('valeurAction');
+
+            valeurAction.innerHTML = `Valeur d'action : <strong>${newVal.toFixed(2)} USDT</strong>`;
+            perfEl.textContent = `Performance : ${performance > 0 ? '+' : ''}${performance}%`;
+            perfEl.className = performance >= 0 ? 'positive' : 'negative';
         }
-    });
 
-    function updateChart() {
-        let last = data[data.length - 1];
-        let variation = last * (Math.random() * 0.015 - 0.0075);
-        let newVal = +(last + variation).toFixed(2);
-        data.push(newVal);
-        if (data.length > 20) data.shift();
-        chart.data.datasets[0].data = data;
-        chart.update();
+        setInterval(updateChart, 3000);
+    </script>
+    {% endif %}
 
-        const performance = ((newVal - initialBalance) / initialBalance * 100).toFixed(2);
-        const perfEl = document.getElementById('performance');
-        const valeurAction = document.getElementById('valeurAction');
-
-        valeurAction.innerHTML = `Valeur d'action : <strong>${newVal.toFixed(2)} USDT</strong>`;
-        perfEl.textContent = `Performance : ${performance > 0 ? '+' : ''}${performance}%`;
-        perfEl.className = performance >= 0 ? 'positive' : 'negative';
-    }
-
-    setInterval(updateChart, 3000);
-</script>
-{% endif %}
-
-<script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.style.left = sidebar.style.left === '0px' ? '-250px' : '0px';
-    }
-</script>
-
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.left = sidebar.style.left === '0px' ? '-250px' : '0px';
+        }
+    </script>
 </body>
 </html>
