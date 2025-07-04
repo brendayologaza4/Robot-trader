@@ -321,7 +321,68 @@
         }
 
         {% if not is_admin and balance > 0 %}
+      <header>
+    <h1>Bienvenue, {{ current_user.username }}</h1>
+    <nav>
+        <a href="{{ url_for('logout') }}">Déconnexion</a>
+    </nav>
+</header>
+
+<main>
+    <section class="account-info">
+        <h2>Informations de votre compte</h2>
+        <p><strong>Nom :</strong> {{ current_user.username }}</p>
+        <p><strong>Email :</strong> {{ current_user.email }}</p>
+        <p><strong>Solde disponible :</strong> {{ current_user.balance }} USD</p>
+    </section>
+
+    <section class="trading-summary">
+        <h2>Résumé des investissements</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Paire</th>
+                    <th>Montant investi</th>
+                    <th>Performance (%)</th>
+                    <th>Date d’investissement</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trade in trades %}
+                <tr>
+                    <td>{{ trade.pair }}</td>
+                    <td>{{ trade.amount }} USD</td>
+                    <td>{{ trade.performance | round(2) }}%</td>
+                    <td>{{ trade.date.strftime('%d/%m/%Y') }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">Aucun investissement pour le moment.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="market-chart">
+        <h2>Graphique des performances</h2>
+        <div id="performance"></div>
+        <div id="valeurAction"></div>
+        <canvas id="performanceChart"></canvas>
+    </section>
+</main>
+
+<footer>
+    <p>©️ 2025 Robot Trader. Tous droits réservés.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
         const ctx = document.getElementById('performanceChart').getContext('2d');
+
+        {% if not is_admin and balance > 0 %}
         let balance = {{ balance }};
         let value = balance;
         let changePercent = 0;
@@ -379,7 +440,51 @@
         }
 
         setInterval(updateChart, 3000);
+        {% else %}
+        // Si c'est un admin ou que le solde est 0, afficher le graphique statique
+        const labels = JSON.parse('{{ performance_dates | tojson | safe }}');
+        const data = JSON.parse('{{ performance_values | tojson | safe }}');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Performance de votre portefeuille (%)',
+                    data: data,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                responsive: true,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.parsed.y + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
         {% endif %}
-    </script>
+    });
+</script>
 </body>
 </html>
