@@ -1,4 +1,3 @@
-/* Reset général */
 * {
     margin: 0;
     padding: 0;
@@ -28,6 +27,7 @@ body::before {
     pointer-events: none;
     z-index: 0;
 }
+
 /* Conteneur principal */
 .container {
     position: relative;
@@ -36,6 +36,17 @@ body::before {
     padding-top: 15vh;
     padding-left: 5%;
     padding-right: 5%;
+}
+
+/* Pour rendre les tableaux scrollables sur petit écran */
+.table-container {
+    overflow-x: auto;
+}
+
+/* Encadre le tableau dans une div */
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
 /* Titre principal */
