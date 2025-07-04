@@ -3,36 +3,33 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 html, body {
     height: 100%;
     width: 100%;
     overflow-x: hidden;
+    background: linear-gradient(135deg, #0d001f 0%, #100022 50%, #1a0033 100%);
+    background-attachment: fixed;
+    color: #e0e0e0;
 }
 
-/* Arrière-plan futuriste */
-body {
-background-image: url("https://i.postimg.cc/Jt6PsJ1G/IMG-6002.jpg");
-    background-size: cover;
-    position: relative;
-    color: #fff;
-}
-
-/* Overlay sombre avec filtre violet/bleu et flou */
+/* Fond texturé léger avec un effet néon discret */
 body::before {
     content: "";
-    position: absolute;
+    position: fixed;
     top: 0; left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(180deg, rgba(20,10,40,0.8) 0%, rgba(10,0,30,0.9) 100%);
-    backdrop-filter: blur(4px);
+    background: radial-gradient(circle at 30% 30%, rgba(100,0,255,0.1), transparent 25%),
+                radial-gradient(circle at 70% 70%, rgba(0,200,255,0.05), transparent 30%);
+    backdrop-filter: blur(2px);
+    pointer-events: none;
     z-index: 0;
 }
 
-/* Contenu */
+/* Conteneur principal */
 .container {
     position: relative;
     z-index: 1;
@@ -44,30 +41,32 @@ body::before {
 
 /* Titre principal */
 .logo {
-    font-size: 40px;
-    font-weight: bold;
-    color: #ffc300;
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #c49aff;
+    text-shadow: 0 0 8px rgba(200, 150, 255, 0.3);
     margin-bottom: 10px;
 }
 
-/* Slogan futuriste en dégradé */
+/* Slogan avec dégradé subtil */
 .subtitle {
     font-size: 22px;
     font-weight: 600;
-    background: linear-gradient(90deg, #f7d000, #00ff9d, #3489ff);
+    background: linear-gradient(90deg, #b46bff, #50aaff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
-/* Description texte */
+/* Description générale */
 .description {
     font-size: 16px;
-    color: #ddd;
+    color: #ccc;
     margin-bottom: 40px;
 }
 
-/* Boutons futuristes */
+/* Boutons stylés futuristes */
 .button-container {
     display: flex;
     justify-content: center;
@@ -76,24 +75,35 @@ body::before {
 
 .button-container a {
     text-decoration: none;
-    padding: 15px 30px;
+    padding: 14px 28px;
     border-radius: 50px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
     transition: all 0.3s;
-    background: linear-gradient(45deg, #0af, #a0f);
+    background: linear-gradient(45deg, #732fff, #30b9ff);
     color: white;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .button-container a:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.5);
 }
 
-/* Responsive */
+/* Pour les titres secondaires */
+h2, h3 {
+    color: #bfaaff;
+    margin-bottom: 15px;
+}
+
+/* Pour les paragraphes du dashboard */
+p, span {
+    color: #cccccc;
+}
+
+/* Responsive pour mobile */
 @media screen and (max-width: 600px) {
-    .logo { font-size: 30px; }
+    .logo { font-size: 32px; }
     .subtitle { font-size: 18px; }
     .description { font-size: 14px; padding: 0 15px; }
     .button-container { flex-direction: column; }
