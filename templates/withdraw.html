@@ -15,45 +15,33 @@
         <form method="POST" action="/withdraw">
 
             <div class="form-group">
-                <label for="withdraw_method">Méthode de retrait :</label>
-                <select name="withdraw_method" id="withdraw_method" class="form-input" required>
-                    <option value="" disabled {% if not selected_method %}selected{% endif %}>-- Sélectionnez une méthode --</option>
-                    <option value="card" {% if selected_method == 'card' %}selected{% endif %}>Carte bancaire</option>
-                    <option value="iban" disabled>IBAN (Indisponible pour le moment)</option>
-                    <option value="id_bank" {% if selected_method == 'id_bank' %}selected{% endif %}>Identification bancaire</option>
+                <label for="amount">Montant du retrait :</label>
+                <input type="number" name="amount" id="amount" class="form-input" required placeholder="Entrez le montant">
+            </div>
+
+            <div class="form-group">
+                <label for="mode">Méthode de retrait :</label>
+                <select name="mode" id="mode" class="form-input" required>
+                    <option value="" disabled selected>-- Sélectionnez une méthode --</option>
+                    <option value="card">Carte bancaire</option>
+                    <option value="bank" disabled>IBAN (Indisponible)</option>
+                    <option value="identification">Identification bancaire</option>
                 </select>
-                <small class="form-hint">Choisissez votre méthode de retrait.</small>
             </div>
 
             <!-- Carte bancaire -->
             <div id="card_section" class="form-section" style="display:none;">
                 <div class="form-group">
                     <label for="card_number">Numéro de carte :</label>
-                    <input type="text" name="card_number" id="card_number" class="form-input" placeholder="0000 0000 0000 0000" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label for="card_name">Nom sur la carte :</label>
-                    <input type="text" name="card_name" id="card_name" class="form-input" placeholder="Nom tel qu'inscrit sur la carte" autocomplete="off">
+                    <input type="text" name="card_number" id="card_number" class="form-input" placeholder="0000 0000 0000 0000">
                 </div>
                 <div class="form-group">
                     <label for="card_expiry">Date d'expiration :</label>
-                    <input type="text" name="card_expiry" id="card_expiry" class="form-input" placeholder="MM/AA" autocomplete="off">
+                    <input type="text" name="card_expiry" id="card_expiry" class="form-input" placeholder="MM/AA">
                 </div>
                 <div class="form-group">
-                    <label for="card_cvc">Code CVC :</label>
-                    <input type="text" name="card_cvv" id="card_cvc" class="form-input" placeholder="123" autocomplete="off">
-                </div>
-            </div>
-
-            <!-- IBAN (désactivé) -->
-            <div id="iban_section" class="form-section" style="display:none;">
-                <div class="form-group">
-                    <label for="iban">IBAN :</label>
-                    <input type="text" name="iban" id="iban" class="form-input" disabled placeholder="Indisponible" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label for="bank_name">Nom de la banque :</label>
-                    <input type="text" name="bank_name" id="bank_name" class="form-input" disabled placeholder="Indisponible" autocomplete="off">
+                    <label for="card_cvv">Code CVC :</label>
+                    <input type="text" name="card_cvv" id="card_cvv" class="form-input" placeholder="123">
                 </div>
             </div>
 
@@ -61,62 +49,50 @@
             <div id="id_section" class="form-section" style="display:none;">
                 <div class="form-group">
                     <label for="bank_name_id">Nom de la banque :</label>
-                    <input type="text" name="bank_name_id" id="bank_name_id" class="form-input" autocomplete="off">
+                    <input type="text" name="bank_name_id" id="bank_name_id" class="form-input">
                 </div>
                 <div class="form-group">
                     <label for="bank_identifiers">Identifiant bancaire (9 à 11 chiffres) :</label>
-                    <input type="text" name="bank_identifiers" id="bank_identifiers" class="form-input" autocomplete="off">
+                    <input type="text" name="bank_identifiers" id="bank_identifiers" class="form-input">
                 </div>
                 <div class="form-group">
                     <label for="bank_code_id">Code d’identification :</label>
-                    <input type="text" name="bank_code_id" id="bank_code_id" class="form-input" autocomplete="off">
+                    <input type="text" name="bank_code_id" id="bank_code_id" class="form-input">
                 </div>
             </div>
 
             <button type="submit" class="btn-primary">Envoyer la demande</button>
-
-            {% if message %}
-                <div class="form-message {{ 'success' if success else 'error' }}">
-                    {{ message }}
-                </div>
-            {% endif %}
-
         </form>
     </div>
 </div>
 
-<!-- Script de gestion d'affichage -->
+<!-- Script pour afficher la bonne section -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const methodSelect = document.getElementById('withdraw_method');
+        const modeSelect = document.getElementById('mode');
         const cardSection = document.getElementById('card_section');
-        const ibanSection = document.getElementById('iban_section');
         const idSection = document.getElementById('id_section');
 
         function hideAllSections() {
             cardSection.style.display = 'none';
-            ibanSection.style.display = 'none';
             idSection.style.display = 'none';
         }
 
         function showSelectedSection() {
             hideAllSections();
-            const selected = methodSelect.value;
+            const selected = modeSelect.value;
 
             if (selected === 'card') {
                 cardSection.style.display = 'block';
-            } else if (selected === 'iban') {
-                ibanSection.style.display = 'block';
-            } else if (selected === 'id_bank') {
+            } else if (selected === 'identification') {
                 idSection.style.display = 'block';
             }
         }
 
-        // Exécution au chargement (utile après une erreur)
-        showSelectedSection();
+        modeSelect.addEventListener('change', showSelectedSection);
 
-        // Exécution quand l'utilisateur change le select
-        methodSelect.addEventListener('change', showSelectedSection);
+        // Affiche la bonne section si un choix est déjà présent (utile après une erreur)
+        showSelectedSection();
     });
 </script>
 
