@@ -322,11 +322,12 @@ Intègre le même style à Dashboard
 
 {% if not is_admin and balance > 0 %}
 <script>
-    const labels = [...Array(20)].map((_, i) => `-${19 - i}`);
-    const initialBalance = {{ balance }};
+    const labels = Array.from({length: 20}, (_, i) => `${-19 + i}`);
+    let initialBalance = {{ balance }};
     let data = Array(20).fill(initialBalance);
-
-    const chart = new Chart(document.getElementById('performanceChart'), {
+    
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
@@ -336,7 +337,7 @@ Intègre le même style à Dashboard
                 borderColor: '#00ff9d',
                 backgroundColor: 'rgba(0,255,157,0.1)',
                 fill: true,
-                tension: 0
+                tension: 0.3
             }]
         },
         options: {
@@ -353,11 +354,13 @@ Intègre le même style à Dashboard
     });
 
     function updateChart() {
-        let last = data[data.length - 1];
-        let variation = last * (Math.random() * 0.015 - 0.0075);
-        let newVal = +(last + variation).toFixed(2);
+        const last = data[data.length - 1];
+        const variation = last * (Math.random() * 0.02 - 0.01); // +/- 1% variation
+        const newVal = +(last + variation).toFixed(2);
+        
         data.push(newVal);
         if (data.length > 20) data.shift();
+
         chart.data.datasets[0].data = data;
         chart.update();
 
@@ -370,7 +373,7 @@ Intègre le même style à Dashboard
         perfEl.className = performance >= 0 ? 'positive' : 'negative';
     }
 
-    setInterval(updateChart, 3000);
+    setInterval(updateChart, 3000); // Mise à jour toutes les 3 secondes
 </script>
 {% endif %}
 
