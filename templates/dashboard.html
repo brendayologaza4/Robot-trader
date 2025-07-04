@@ -305,7 +305,9 @@
                             <tr><td>BTC/USDT</td><td>56,320</td><td class="positive">+2.3%</td><td>$18B</td></tr>
                             <tr><td>ETH/USDT</td><td>3,480</td><td class="negative">-1.2%</td><td>$8.1B</td></tr>
                             <tr><td>PAXG/USDT</td><td>2,340</td><td class="positive">+0.5%</td><td>$240M</td></tr>
-                            <tr><td>SOL/USDT</td><td>132</td><td class="positive">+4.1%</td><td>$1.5B</td></tr>
+                            <tr                            <tr><td>PAXG/USDT</td><td>2,340</td><td class="positive">+0.5%</td><td>$240M</td></tr>
+                            <tr><td>XRP/USDT</td><td>0.634</td><td class="negative">-0.8%</td><td>$2.3B</td></tr>
+                            <tr><td>SOL/USDT</td><td>145.80</td><td class="positive">+4.1%</td><td>$1.9B</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -313,99 +315,72 @@
         {% endif %}
     </div>
 
-    {% if not is_admin and balance > 0 %}
     <script>
-        const labels = [...Array(20)].map((_, i) => `-${19 - i}`);
-        const initialBalance = {{ balance }};
-        let data = [initialBalance];
-        const chart = new Chart(document.getElementById('performanceChart'), {
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.left = (sidebar.style.left === '0px') ? '-250px' : '0px';
+        }
+
+        {% if not is_admin and balance > 0 %}
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        let balance = {{ balance }};
+        let value = balance;
+        let changePercent = 0;
+        let chartData = {
+            labels: [],
+            datasets: [{
+                label: 'Évolution du Solde (USDT)',
+                data: [],
+                fill: true,
+                backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                borderColor: 'rgba(46, 204, 113, 1)',
+                tension: 0.3
+            }]
+        };
+
+        let chart = new Chart(ctx, {
             type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Évolution du solde',
-                    data: data,
-                    borderColor: 'rgb(46, 204, 113)',
-                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                    fill: true,
-                    tension:                    tension: 0.3,
-                    pointRadius: 0,
-                    borderWidth: 2
-                }]
-            },
+            data: chartData,
             options: {
                 responsive: true,
-                animation: false,
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        ticks: {
-                            color: 'white'
-                        },
-                        grid: {
-                            color: 'rgba(255,255,255,0.1)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: 'white'
-                        },
-                        grid: {
-                            color: 'rgba(255,255,255,0.1)'
-                        }
-                    }
-                },
                 plugins: {
-                    legend: {
-                        labels: {
-                            color: 'white',
-                            font: {
-                                size: 14
-                            }
-                        }
-                    }
+                    legend: { display: true },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                },
+                scales: {
+                    x: { display: true },
+                    y: { display: true }
                 }
             }
         });
 
-        // Fonction pour simuler l'évolution du solde (simple variation aléatoire)
-        function simulateNextValue(currentValue) {
-            // Variation aléatoire entre -2% et +2%
-            const variationPercent = (Math.random() * 4) - 2;
-            const newValue = currentValue + (currentValue * variationPercent / 100);
-            return Math.max(newValue, 0);
-        }
-
-        // Mise à jour du graphique toutes les secondes (par exemple)
-        setInterval(() => {
-            let lastValue = data[data.length - 1];
-            let nextValue = simulateNextValue(lastValue);
-            data.push(nextValue);
-            if (data.length > 20) data.shift();
-
-            chart.data.datasets[0].data = data;
+        function updateChart() {
+            const now = new Date();
+            const label = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
+            changePercent += (Math.random() * 2 - 1);  // +/- 1% fluctuation
+            let newValue = value * (1 + changePercent / 100);
+            chartData.labels.push(label);
+            chartData.datasets[0].data.push(newValue.toFixed(2));
+            if (chartData.labels.length > 30) {
+                chartData.labels.shift();
+                chartData.datasets[0].data.shift();
+            }
             chart.update();
 
-            // Mise à jour de la performance en pourcentage
-            const perfPercent = ((nextValue - initialBalance) / initialBalance) * 100;
-            const perfEl = document.getElementById('performance');
-            perfEl.textContent = `Performance : ${perfPercent >= 0 ? '+' : ''}${perfPercent.toFixed(2)}%`;
-            perfEl.className = perfPercent >= 0 ? 'positive' : 'negative';
+            const performance = ((newValue - balance) / balance * 100).toFixed(2);
+            document.getElementById('performance').innerHTML = (performance >= 0 ? '<span class="positive">Performance : +' + performance + '%</span>' : '<span class="negative">Performance : ' + performance + '%</span>');
+            document.getElementById('valeurAction').innerHTML = 'Valeur d\'action : <strong>' + newValue.toFixed(2) + ' USDT</strong>';
 
-            // Mise à jour de la valeur d'action affichée
-            document.getElementById('valeurAction').innerHTML = `Valeur d'action : <strong>${nextValue.toFixed(2)} USDT</strong>`;
-        }, 1000);
-
-        // Sidebar toggle
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar.style.left === '0px') {
-                sidebar.style.left = '-250px';
-            } else {
-                sidebar.style.left = '0px';
-            }
+            value = newValue;
         }
+
+        setInterval(updateChart, 3000);
+        {% endif %}
     </script>
-    {% endif %}
 </body>
 </html>
