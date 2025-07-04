@@ -1,3 +1,4 @@
+/* ========================== Base globale ========================== */
 * {
     margin: 0;
     padding: 0;
@@ -46,7 +47,22 @@ body::before {
 /* Encadre le tableau dans une div */
 .table-container table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate; /* Permet espace entre les lignes */
+    border-spacing: 0 6px; /* Espace vertical entre les lignes */
+}
+
+/* Style des cellules tableau */
+.table-container th, 
+.table-container td {
+    border-bottom: 1.5px solid rgba(196, 154, 255, 0.3); /* Ligne discrète violet clair */
+    padding: 12px 15px;
+    text-align: left;
+}
+
+/* Effet survol ligne */
+.table-container tr:hover td {
+    background: rgba(114, 48, 255, 0.15); /* violet léger */
+    transition: background 0.3s ease;
 }
 
 /* Titre principal */
@@ -204,5 +220,37 @@ p, span {
 @media screen and (max-width: 500px) {
     .form-container {
         padding: 25px 20px;
+    }
+}
+
+/* ====================== Styles Graphe Chart.js ====================== */
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 700px; /* max largeur sur grand écran */
+    margin: 0 auto 40px auto;
+    padding: 0 10px; /* padding pour ne pas coller les bords sur mobile */
+}
+
+canvas {
+    width: 100% !important; /* responsive */
+    height: auto !important; /* conserve ratio */
+    max-height: 400px;
+    box-shadow: 0 0 15px rgba(114, 48, 255, 0.3);
+    border-radius: 12px;
+    background: rgba(25, 0, 55, 0.6);
+}
+
+/* Responsive très petit écran */
+@media screen and (max-width: 480px) {
+    .chart-container {
+        max-width: 100%;
+        padding: 0 5px;
+    }
+
+    canvas {
+        max-height: 250px;
+        box-shadow: 0 0 10px rgba(114, 48, 255, 0.25);
     }
 }
