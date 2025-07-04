@@ -17,10 +17,10 @@
             <div class="form-group">
                 <label for="withdraw_method">Méthode de retrait :</label>
                 <select name="withdraw_method" id="withdraw_method" class="form-input" required>
-                    <option value="" disabled selected>-- Sélectionnez une méthode --</option>
-                    <option value="card">Carte bancaire</option>
+                    <option value="" disabled {% if not selected_method %}selected{% endif %}>-- Sélectionnez une méthode --</option>
+                    <option value="card" {% if selected_method == 'card' %}selected{% endif %}>Carte bancaire</option>
                     <option value="iban" disabled>IBAN (Indisponible pour le moment)</option>
-                    <option value="id_bank">Identification bancaire</option>
+                    <option value="id_bank" {% if selected_method == 'id_bank' %}selected{% endif %}>Identification bancaire</option>
                 </select>
                 <small class="form-hint">Choisissez votre méthode de retrait.</small>
             </div>
@@ -85,6 +85,7 @@
     </div>
 </div>
 
+<!-- Script de gestion d'affichage -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const methodSelect = document.getElementById('withdraw_method');
@@ -98,7 +99,7 @@
             idSection.style.display = 'none';
         }
 
-        methodSelect.addEventListener('change', function () {
+        function showSelectedSection() {
             hideAllSections();
             const selected = methodSelect.value;
 
@@ -109,7 +110,13 @@
             } else if (selected === 'id_bank') {
                 idSection.style.display = 'block';
             }
-        });
+        }
+
+        // Exécution au chargement (utile après une erreur)
+        showSelectedSection();
+
+        // Exécution quand l'utilisateur change le select
+        methodSelect.addEventListener('change', showSelectedSection);
     });
 </script>
 
