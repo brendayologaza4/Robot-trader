@@ -314,80 +314,80 @@
         {% endif %}
     </div>
 
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.style.left = (sidebar.style.left === '0px') ? '-250px' : '0px';
+   <script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.style.left = (sidebar.style.left === '0px') ? '-250px' : '0px';
+    }
+
+    {% if not is_admin and balance > 0 %}
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    let balance = {{ balance }};
+    let value = balance;
+    let changePercent = 0;
+
+    let chartData = {
+        labels: [],
+        datasets: [{
+            label: 'Évolution du Solde (USDT)',
+            data: [],
+            fill: true,
+            backgroundColor: 'rgba(46, 204, 113, 0.2)',
+            borderColor: 'rgba(46, 204, 113, 1)',
+            borderWidth: 2,
+            tension: 0.3
+        }]
+    };
+
+    let chart = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                tooltip: { mode: 'index', intersect: false }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            },
+            scales: {
+                x: { display: true },
+                y: { display: true }
+            }
+        }
+    });
+
+    function updateChart() {
+        const now = new Date();
+        const label = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
+        changePercent += (Math.random() * 2 - 1);
+        let newValue = value * (1 + changePercent / 100);
+
+        chartData.labels.push(label);
+        chartData.datasets[0].data.push(newValue.toFixed(2));
+
+        if (chartData.labels.length > 30) {
+            chartData.labels.shift();
+            chartData.datasets[0].data.shift();
         }
 
-       
-const ctx = document.getElementById('performanceChart').getContext('2d');
-        let balance = {{ balance }};
-        let value = balance;
-        let changePercent = 0;
+        chart.update();
 
-        let chartData = {
-            labels: [],
-            datasets: [{
-                label: 'Évolution du Solde (USDT)',
-                data: [],
-                fill: true,
-                backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                borderColor: 'rgba(46, 204, 113, 1)',
-                borderWidth: 2,
-                tension: 0.3
-            }]
-        };
+        const performance = ((newValue - balance) / balance * 100).toFixed(2);
+        document.getElementById('performance').innerHTML = (performance >= 0
+            ? '<span class="positive">Performance : +' + performance + '%</span>'
+            : '<span class="negative">Performance : ' + performance + '%</span>');
+        document.getElementById('valeurAction').innerHTML = 'Valeur d\'action : <strong>' + newValue.toFixed(2) + ' USDT</strong>';
 
-        let chart = new Chart(ctx, {
-            type: 'line',
-            data: chartData,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: true },
-                    tooltip: { mode: 'index', intersect: false }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
-                },
-                scales: {
-                    x: { display: true },
-                    y: { display: true }
-                }
-            }
-        });
+        value = newValue;
+    }
 
-        function updateChart() {
-            const now = new Date();
-            const label = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
-            changePercent += (Math.random() * 2 - 1);  // fluctuation entre -1% et +1%
-            let newValue = value * (1 + changePercent / 100);
-
-            chartData.labels.push(label);
-            chartData.datasets[0].data.push(newValue.toFixed(2));
-
-            if (chartData.labels.length > 30) {
-                chartData.labels.shift();
-                chartData.datasets[0].data.shift();
-            }
-
-            chart.update();
-
-            const performance = ((newValue - balance) / balance * 100).toFixed(2);
-            document.getElementById('performance').innerHTML = (performance >= 0
-                ? '<span class="positive">Performance : +' + performance + '%</span>'
-                : '<span class="negative">Performance : ' + performance + '%</span>');
-            document.getElementById('valeurAction').innerHTML = 'Valeur d\'action : <strong>' + newValue.toFixed(2) + ' USDT</strong>';
-
-            value = newValue;
-        }
-
-        updateChart();  // appel initial
-        setInterval(updateChart, 3000);
-        {% endif %}
-    </script>
+    updateChart();
+    setInterval(updateChart, 3000);
+    {% endif %}
+</script>
 </body>
 </html>
