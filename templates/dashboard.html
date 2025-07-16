@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8" />
     <title>Robot Trader - Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 
@@ -150,14 +149,15 @@
             </div>
         {% endif %}
     </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
    <script>
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         sidebar.style.left = (sidebar.style.left === '0px') ? '-250px' : '0px';
     }
-
+       </script>
    {% if not is_admin and balance > 0 %}
+     
 <script>
     const canvas = document.getElementById('performanceChart');
     if (canvas) {
@@ -230,6 +230,5 @@
     }
 </script>
 {% endif %}
-</script>
 </body>
 </html>
