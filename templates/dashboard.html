@@ -6,8 +6,6 @@
     <title>Robot Trader - Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-
-    
 </head>
 <body>
     <div class="menu-icon" onclick="toggleSidebar()">
@@ -27,6 +25,7 @@
 
     <div class="container">
         {% if is_admin %}
+            <!-- ADMIN INTERFACE -->
             <div class="card">
                 <h2>Bienvenue, Admin {{ admin.username }}</h2>
                 <p>Configurer ou modifier les soldes des clients :</p>
@@ -112,13 +111,14 @@
                 </div>
             </div>
         {% else %}
+            <!-- CLIENT INTERFACE -->
             <div class="card">
                 <h2>Bienvenue, {{ username }}</h2>
                 {% if balance > 0 %}
                     <p><strong>Solde actuel :</strong> {{ balance }} USDT</p>
                     <p id="valeurAction">Valeur d'action : <strong>{{ balance }} USDT</strong></p>
                     <p id="performance" class="positive">Performance : +0.00%</p>
-                    <canvas id="performanceChart"></canvas>
+                    <canvas id="performanceChart" width="400" height="150"></canvas>
                 {% else %}
                     <p>⚠️ Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
                     <a href="/create_payment" class="btn" style="display:inline-block; margin-top: 10px; background-color:#2ecc71; color:white; padding:10px 20px; border-radius:5px; text-decoration:none;">💰 Déposer de l'argent</a>
@@ -149,86 +149,92 @@
             </div>
         {% endif %}
     </div>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-   <script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.style.left = (sidebar.style.left === '0px') ? '-250px' : '0px';
-    }
-       </script>
-   {% if not is_admin and balance > 0 %}
-     
-<script>
-    const canvas = document.getElementById('performanceChart');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        let balance = parseFloat("{{ balance }}");
-        let value = balance;
-        let changePercent = 0;
 
-        let chartData = {
-            labels: [],
-            datasets: [{
-                label: 'Évolution du Solde (USDT)',
-                data: [],
-                fill: true,
-                backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                borderColor: 'rgba(46, 204, 113, 1)',
-                borderWidth: 2,
-                tension: 0.3
-            }]
-        };
-
-        let chart = new Chart(ctx, {
-            type: 'line',
-            data: chartData,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: true },
-                    tooltip: { mode: 'index', intersect: false }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
-                },
-                scales: {
-                    x: { display: true },
-                    y: { display: true }
-                }
-            }
-        });
-
-        function updateChart() {
-            const now = new Date();
-            const label = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
-            changePercent += (Math.random() * 2 - 1);
-            let newValue = value * (1 + changePercent / 100);
-
-            chartData.labels.push(label);
-            chartData.datasets[0].data.push(newValue.toFixed(2));
-
-            if (chartData.labels.length > 30) {
-                chartData.labels.shift();
-                chartData.datasets[0].data.shift();
-            }
-
-            chart.update();
-
-            const performance = ((newValue - balance) / balance * 100).toFixed(2);
-            document.getElementById('performance').innerHTML = (performance >= 0
-                ? '<span class="positive">Performance : +' + performance + '%</span>'
-                : '<span class="negative">Performance : ' + performance + '%</span>');
-            document.getElementById('valeurAction').innerHTML = 'Valeur d\'action : <strong>' + newValue.toFixed(2) + ' USDT</strong>';
-
-            value = newValue;
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.left = (sidebar.style.left === '0px') ? '-250px' : '0px';
         }
+    </script>
 
-        updateChart();
-        setInterval(updateChart, 3000);
-    }
-</script>
-{% endif %}
+    {% if not is_admin and balance > 0 %}
+    <script>
+        const canvas = document.getElementById('performanceChart');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+
+            const chartLabels = {{ chart_labels | tojson }};
+            const chartDataValues = {{ chart_data | tojson }};
+
+            let balance = parseFloat("{{ balance }}");
+            let value = chartDataValues.length > 0 ? chartDataValues[chartDataValues.length - 1] : balance;
+            let changePercent = 0;
+
+            let chartData = {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Évolution du Solde (USDT)',
+                    data: chartDataValues,
+                    fill: true,
+                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                    borderColor: 'rgba(46, 204, 113, 1)',
+                    borderWidth: 2,
+                    tension: 0.3
+                }]
+            };
+
+            let chart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    },
+                    scales: {
+                        x: { display: true },
+                        y: { display: true }
+                    }
+                }
+            });
+
+            function updateChart() {
+                const now = new Date();
+                const label = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
+                changePercent += (Math.random() * 2 - 1);
+                let newValue = value * (1 + changePercent / 100);
+
+                chartData.labels.push(label);
+                chartData.datasets[0].data.push(newValue.toFixed(2));
+
+                if (chartData.labels.length > 30) {
+                    chartData.labels.shift();
+                    chartData.datasets[0].data.shift();
+                }
+
+                chart.update();
+
+                const performance = ((newValue - balance) / balance * 100).toFixed(2);
+                document.getElementById('performance').innerHTML = (performance >= 0
+                    ? '<span class="positive">Performance : +' + performance + '%</span>'
+                    : '<span class="negative">Performance : ' + performance + '%</span>');
+                document.getElementById('valeurAction').innerHTML = 'Valeur d\'action : <strong>' + newValue.toFixed(2) + ' USDT</strong>';
+
+                value = newValue;
+            }
+
+            updateChart();
+            setInterval(updateChart, 3000);
+        }
+    </script>
+    {% endif %}
 </body>
 </html>
