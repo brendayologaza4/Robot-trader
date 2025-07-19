@@ -14,64 +14,71 @@
 
         <form method="POST" action="/withdraw">
 
+            <!-- Montant du retrait -->
             <div class="form-group">
                 <label for="amount">Montant du retrait :</label>
                 <input type="number" name="amount" id="amount" class="form-input" required placeholder="Entrez le montant">
             </div>
 
+            <!-- Méthode de retrait -->
             <div class="form-group">
                 <label for="mode">Méthode de retrait :</label>
                 <select name="mode" id="mode" class="form-input" required>
                     <option value="" disabled selected>-- Sélectionnez une méthode --</option>
                     <option value="card">Carte bancaire</option>
-                    <option value="bank" disabled>IBAN (Indisponible)</option>
+                    <option value="bank" disabled>Virement (Indisponible)</option>
                     <option value="identification">Identification bancaire</option>
                 </select>
             </div>
 
-            <!-- Carte bancaire -->
-            <div id="card_section" class="form-section" style="display:none;">
-                <div class="form-group">
-                    <label for="card_number">Numéro de carte :</label>
-                    <input type="text" name="card_number" id="card_number" class="form-input" placeholder="0000 0000 0000 0000">
+            <!-- Sections masquées au départ -->
+            <div id="method_fields" style="display:none;">
+                <!-- Carte bancaire -->
+                <div id="card_section" class="form-section" style="display:none;">
+                    <div class="form-group">
+                        <label for="card_number">Numéro de carte :</label>
+                        <input type="text" name="card_number" id="card_number" class="form-input" placeholder="0000 0000 0000 0000">
+                    </div>
+                    <div class="form-group">
+                        <label for="card_expiry">Date d'expiration :</label>
+                        <input type="text" name="card_expiry" id="card_expiry" class="form-input" placeholder="MM/AA">
+                    </div>
+                    <div class="form-group">
+                        <label for="card_cvv">Code CVC :</label>
+                        <input type="text" name="card_cvv" id="card_cvv" class="form-input" placeholder="123">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="card_expiry">Date d'expiration :</label>
-                    <input type="text" name="card_expiry" id="card_expiry" class="form-input" placeholder="MM/AA">
-                </div>
-                <div class="form-group">
-                    <label for="card_cvv">Code CVC :</label>
-                    <input type="text" name="card_cvv" id="card_cvv" class="form-input" placeholder="123">
+
+                <!-- Identification bancaire -->
+                <div id="id_section" class="form-section" style="display:none;">
+                    <div class="form-group">
+                        <label for="bank_name_id">Nom de la banque :</label>
+                        <input type="text" name="bank_name_id" id="bank_name_id" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="bank_identifiers">Identifiant bancaire (9 à 11 chiffres) :</label>
+                        <input type="text" name="bank_identifiers" id="bank_identifiers" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="bank_code_id">Code d’identification :</label>
+                        <input type="text" name="bank_code_id" id="bank_code_id" class="form-input">
+                    </div>
                 </div>
             </div>
 
-            <!-- Identification bancaire -->
-            <div id="id_section" class="form-section" style="display:none;">
-                <div class="form-group">
-                    <label for="bank_name_id">Nom de la banque :</label>
-                    <input type="text" name="bank_name_id" id="bank_name_id" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label for="bank_identifiers">Identifiant bancaire (9 à 11 chiffres) :</label>
-                    <input type="text" name="bank_identifiers" id="bank_identifiers" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label for="bank_code_id">Code d’identification :</label>
-                    <input type="text" name="bank_code_id" id="bank_code_id" class="form-input">
-                </div>
-            </div>
-
+            <!-- Bouton -->
             <button type="submit" class="btn-primary">Envoyer la demande</button>
         </form>
     </div>
 </div>
 
-<!-- Script pour afficher la bonne section -->
+<!-- JavaScript -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const modeSelect = document.getElementById('mode');
         const cardSection = document.getElementById('card_section');
         const idSection = document.getElementById('id_section');
+        const methodFields = document.getElementById('method_fields');
 
         function hideAllSections() {
             cardSection.style.display = 'none';
@@ -83,15 +90,19 @@
             const selected = modeSelect.value;
 
             if (selected === 'card') {
+                methodFields.style.display = 'block';
                 cardSection.style.display = 'block';
             } else if (selected === 'identification') {
+                methodFields.style.display = 'block';
                 idSection.style.display = 'block';
+            } else {
+                methodFields.style.display = 'none';
             }
         }
 
         modeSelect.addEventListener('change', showSelectedSection);
 
-        // Affiche la bonne section si un choix est déjà présent (utile après une erreur)
+        // Affiche la bonne section si une méthode est déjà sélectionnée
         showSelectedSection();
     });
 </script>
