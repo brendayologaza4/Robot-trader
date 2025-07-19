@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Demande de retrait</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .form-section { display: none; }
+    </style>
 </head>
 <body>
 
@@ -13,7 +16,6 @@
         <h2 class="form-title">Demande de retrait</h2>
 
         <form method="POST" action="/withdraw">
-
             <!-- Montant du retrait -->
             <div class="form-group">
                 <label for="amount">Montant du retrait :</label>
@@ -26,15 +28,16 @@
                 <select name="mode" id="mode" class="form-input" required>
                     <option value="" disabled selected>-- Sélectionnez une méthode --</option>
                     <option value="card">Carte bancaire</option>
-                    <option value="bank" disabled>Virement (Indisponible)</option>
+                    <option value="bank" disabled>IBAN (Indisponible)</option>
                     <option value="identification">Identification bancaire</option>
                 </select>
             </div>
 
-            <!-- Sections masquées au départ -->
-            <div id="method_fields" style="display:none;">
+            <!-- Champs dynamiques -->
+            <div id="method_fields">
+
                 <!-- Carte bancaire -->
-                <div id="card_section" class="form-section" style="display:none;">
+                <div id="card_section" class="form-section">
                     <div class="form-group">
                         <label for="card_number">Numéro de carte :</label>
                         <input type="text" name="card_number" id="card_number" class="form-input" placeholder="0000 0000 0000 0000">
@@ -50,7 +53,7 @@
                 </div>
 
                 <!-- Identification bancaire -->
-                <div id="id_section" class="form-section" style="display:none;">
+                <div id="id_section" class="form-section">
                     <div class="form-group">
                         <label for="bank_name_id">Nom de la banque :</label>
                         <input type="text" name="bank_name_id" id="bank_name_id" class="form-input">
@@ -66,7 +69,7 @@
                 </div>
             </div>
 
-            <!-- Bouton -->
+            <!-- Bouton d'envoi -->
             <button type="submit" class="btn-primary">Envoyer la demande</button>
         </form>
     </div>
@@ -83,27 +86,28 @@
         function hideAllSections() {
             cardSection.style.display = 'none';
             idSection.style.display = 'none';
+            methodFields.style.display = 'none';
         }
 
         function showSelectedSection() {
-            hideAllSections();
             const selected = modeSelect.value;
 
             if (selected === 'card') {
                 methodFields.style.display = 'block';
                 cardSection.style.display = 'block';
+                idSection.style.display = 'none';
             } else if (selected === 'identification') {
                 methodFields.style.display = 'block';
                 idSection.style.display = 'block';
+                cardSection.style.display = 'none';
             } else {
-                methodFields.style.display = 'none';
+                hideAllSections();
             }
         }
 
         modeSelect.addEventListener('change', showSelectedSection);
 
-        // Affiche la bonne section si une méthode est déjà sélectionnée
-        showSelectedSection();
+        hideAllSections(); // Masquer tout au départ
     });
 </script>
 
