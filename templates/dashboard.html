@@ -6,6 +6,8 @@
     <title>Robot Trader - Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <!-- Chart.js chargé dans le head pour éviter les problèmes de timing -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="menu-icon" onclick="toggleSidebar()">
@@ -25,10 +27,10 @@
 
     <div class="container">
         {% if is_admin %}
-            <!-- ADMIN INTERFACE -->
+            <!-- ADMIN INTERFACE (inchangé) -->
             <div class="card">
                 <h2>Bienvenue, Admin {{ admin.username }}</h2>
-                <p>Configurer ou modifier les soldes des clients :</p>
+               <p>Configurer ou modifier les soldes des clients :</p>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -110,24 +112,30 @@
                     {% endif %}
                 </div>
             </div>
+            </div>
         {% else %}
-            <!-- CLIENT INTERFACE -->
+            <!-- CLIENT INTERFACE avec corrections minimales -->
             <div class="card">
                 <h2>Bienvenue, {{ username }}</h2>
                 {% if balance > 0 %}
                     <p><strong>Solde actuel :</strong> {{ balance }} USDT</p>
                     <p id="valeurAction">Valeur d'action : <strong>{{ balance }} USDT</strong></p>
                     <p id="performance" class="positive">Performance : +0.00%</p>
-                    <canvas id="performanceChart" width="400" height="150"></canvas>
+                    
+                    <!-- Canvas dans un conteneur avec style inline minimal -->
+                    <div style="width:100%; height:150px;">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
                 {% else %}
-                    <p>⚠️ Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
+                    <p>⚠ Vous devez avoir un solde supérieur à 0 pour commencer à trader.</p>
                     <a href="/create_payment" class="btn" style="display:inline-block; margin-top: 10px; background-color:#2ecc71; color:white; padding:10px 20px; border-radius:5px; text-decoration:none;">💰 Déposer de l'argent</a>
                 {% endif %}
             </div>
 
+            <!-- Table crypto inchangée -->
             <div class="card crypto-table">
                 <h2>Marché des Cryptomonnaies</h2>
-                <div class="table-container">
+                                <div class="table-container">
                     <table>
                         <thead>
                             <tr>
@@ -150,8 +158,6 @@
         {% endif %}
     </div>
 
-    <!-- SCRIPTS -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -161,22 +167,30 @@
 
     {% if not is_admin and balance > 0 %}
     <script>
+        // Debug minimal ajouté
+        console.log('Initialisation du graphique...');
+        
         const canvas = document.getElementById('performanceChart');
         if (canvas) {
+            // Correction: Force la taille du canvas
+            canvas.style.width = '100%';
+            canvas.style.height = '150px';
+            
             const ctx = canvas.getContext('2d');
 
-            const chartLabels = {{ chart_labels | tojson }};
-            const chartDataValues = {{ chart_data | tojson }};
+            // Debug des données
+            console.log('Labels:', {{ chart_labels | tojson }});
+            console.log('Data:', {{ chart_data | tojson }});
 
             let balance = parseFloat("{{ balance }}");
-            let value = chartDataValues.length > 0 ? chartDataValues[chartDataValues.length - 1] : balance;
+            let value = {{ chart_data | last | default(balance) }};
             let changePercent = 0;
 
             let chartData = {
-                labels: chartLabels,
+                labels: {{ chart_labels | tojson }},
                 datasets: [{
                     label: 'Évolution du Solde (USDT)',
-                    data: chartDataValues,
+                    data: {{ chart_data | tojson }},
                     fill: true,
                     backgroundColor: 'rgba(46, 204, 113, 0.2)',
                     borderColor: 'rgba(46, 204, 113, 1)',
@@ -190,14 +204,10 @@
                 data: chartData,
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false, // Ajout critique
                     plugins: {
                         legend: { display: true },
                         tooltip: { mode: 'index', intersect: false }
-                    },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
                     },
                     scales: {
                         x: { display: true },
@@ -212,12 +222,12 @@
                 changePercent += (Math.random() * 2 - 1);
                 let newValue = value * (1 + changePercent / 100);
 
-                chartData.labels.push(label);
-                chartData.datasets[0].data.push(newValue.toFixed(2));
+                chart.data.labels.push(label);
+                chart.data.datasets[0].data.push(newValue.toFixed(2));
 
-                if (chartData.labels.length > 30) {
-                    chartData.labels.shift();
-                    chartData.datasets[0].data.shift();
+                if (chart.data.labels.length > 30) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
                 }
 
                 chart.update();
@@ -233,6 +243,8 @@
 
             updateChart();
             setInterval(updateChart, 3000);
+        } else {
+            console.error("Canvas non trouvé !");
         }
     </script>
     {% endif %}
