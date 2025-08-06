@@ -322,6 +322,9 @@ def withdraw_requests():
 
     # Afficher dans le template
     return render_template('withdraw_requests.html', requests=requests_list)
+ @app.route('/go_to_payment')
+def go_to_payment():
+    return redirect("https://payement-o8qm.onrender.com/")   
 # --- Traitement retrait admin (accepter/rejeter) ---
 @app.route('/process_withdrawal/<request_id>', methods=['POST'])
 def process_withdrawal(request_id):
