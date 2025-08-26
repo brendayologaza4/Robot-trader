@@ -8,7 +8,7 @@ import os
 import random
 import numpy as np
 import requests
-
+ADMIN_USERNAME = "Brenda"
 NOWPAYMENTS_API_KEY = "CADPW8X-HAJ4NE1-GESD40K-BE8YE8E"
 
 # --- Initialisation Flask ---
@@ -126,20 +126,21 @@ def dashboard():
         if 'username' not in session:
             return redirect(url_for('login'))
 
-        # Récupère les informations de l'utilisateur
+        # Récupère l'utilisateur connecté
         current_user = db.users.find_one({"username": session['username']})
         if current_user is None:
             session.pop('username', None)
             return redirect(url_for('login'))
 
-        role = current_user.get('role', 'client')
-
-        # Partie admin
-        if role == 'admin':
+        # Vérifie si c’est Brenda (admin)
+        if current_user['username'] == ADMIN_USERNAME:
+            # Partie admin
             users = list(db.users.find({"role": "client"}))
 
             try:
-                withdraw_requests = list(db.withdraw_requests.find().sort('date', -1))
+                withdraw_requests = list(
+                    db.withdraw_requests.find().sort('date', -1)
+                )
             except Exception as e:
                 withdraw_requests = []
                 print("Erreur récupération demandes retrait :", e)
@@ -152,16 +153,23 @@ def dashboard():
                 withdraw_requests=withdraw_requests
             )
 
-        # Partie client
+        # Partie client (tous les autres)
         balance = current_user.get('balance', 0)
 
         # Génère des données de performance simulées
-        fake_growth = [round(balance * (1 + np.random.uniform(-0.02, 0.05)), 2) for _ in range(10)]
+        fake_growth = [
+            round(balance * (1 + np.random.uniform(-0.02, 0.05)), 2)
+            for _ in range(10)
+        ]
         dates = [
             (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%d-%m')
             for i in reversed(range(10))
         ]
-        performance = round(fake_growth[-1] - fake_growth[0], 2) if len(fake_growth) >= 2 else 0
+        performance = (
+            round(fake_growth[-1] - fake_growth[0], 2)
+            if len(fake_growth) >= 2
+            else 0
+        )
 
         return render_template(
             "dashboard.html",
