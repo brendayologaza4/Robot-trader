@@ -190,8 +190,7 @@ def update_balance():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    admin = db.users.find_one({"username": session['username']})
-    if admin['role'] != 'admin':
+    if session['username'] != ADMIN_USERNAME:
         return "Accès refusé"
 
     target = request.form['username']
@@ -200,14 +199,15 @@ def update_balance():
     db.users.update_one({"username": target}, {"$set": {"balance": new_balance}})
     return redirect(url_for('dashboard'))
 
+
+
 # --- Voir le profil d’un utilisateur (admin) ---
 @app.route('/user/<username>')
 def user_profile(username):
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    current_user = db.users.find_one({"username": session['username']})
-    if not current_user or current_user['role'] != 'admin':
+    if session['username'] != ADMIN_USERNAME:
         return render_template('403.html'), 403
 
     target_user = db.users.find_one({"username": username})
@@ -225,6 +225,7 @@ def user_profile(username):
                            chart_labels=dates,
                            chart_data=fake_growth,
                            performance=performance)
+
 
 
 
@@ -304,7 +305,7 @@ def withdraw_requests():
     # Récupérer l'utilisateur courant
     current_user = db.users.find_one({"username": session['username']})
 
-    if not current_user or current_user['role'] != 'admin':
+    if not current_user or current_user['role'] != ADMIN_USERNAME:
         return render_template('403.html'), 403
 
     # Récupérer les demandes de retrait triées par date décroissante
