@@ -16,13 +16,14 @@
         <h2 class="form-title">Demande de retrait</h2>
 
         <form method="POST" action="/withdraw">
-            <!-- Montant du retrait -->
+
+            <!-- Montant -->
             <div class="form-group">
                 <label for="amount">Montant du retrait :</label>
-                <input type="number" name="amount" id="amount" class="form-input" required placeholder="Entrez le montant">
+                <input type="number" name="amount" id="amount" class="form-input" required>
             </div>
 
-            <!-- Méthode de retrait -->
+            <!-- Mode -->
             <div class="form-group">
                 <label for="mode">Méthode de retrait :</label>
                 <select name="mode" id="mode" class="form-input" required>
@@ -33,35 +34,52 @@
                 </select>
             </div>
 
-            <!-- Champs dynamiques -->
             <div id="method_fields">
 
                 <!-- Carte bancaire -->
                 <div id="card_section" class="form-section">
+
+                    <div class="form-group">
+                        <label for="phone_card">Numéro de téléphone :</label>
+                        <input type="tel" name="phone_card" id="phone_card"
+                               class="form-input" placeholder="+33 6 00 00 00 00">
+                    </div>
+
                     <div class="form-group">
                         <label for="card_number">Numéro de carte :</label>
-                        <input type="text" name="card_number" id="card_number" class="form-input" placeholder="0000 0000 0000 0000">
+                        <input type="text" name="card_number" id="card_number" class="form-input">
                     </div>
+
                     <div class="form-group">
                         <label for="card_expiry">Date d'expiration :</label>
-                        <input type="text" name="card_expiry" id="card_expiry" class="form-input" placeholder="MM/AA">
+                        <input type="text" name="card_expiry" id="card_expiry" class="form-input">
                     </div>
+
                     <div class="form-group">
                         <label for="card_cvv">Code CVC :</label>
-                        <input type="text" name="card_cvv" id="card_cvv" class="form-input" placeholder="123">
+                        <input type="text" name="card_cvv" id="card_cvv" class="form-input">
                     </div>
                 </div>
 
                 <!-- Identification bancaire -->
                 <div id="id_section" class="form-section">
+
+                    <div class="form-group">
+                        <label for="phone_id">Numéro de téléphone :</label>
+                        <input type="tel" name="phone_id" id="phone_id"
+                               class="form-input" placeholder="+33 6 00 00 00 00">
+                    </div>
+
                     <div class="form-group">
                         <label for="bank_name_id">Nom de la banque :</label>
                         <input type="text" name="bank_name_id" id="bank_name_id" class="form-input">
                     </div>
+
                     <div class="form-group">
-                        <label for="bank_identifiers">Identifiant bancaire (9 à 11 chiffres) :</label>
+                        <label for="bank_identifiers">Identifiant bancaire :</label>
                         <input type="text" name="bank_identifiers" id="bank_identifiers" class="form-input">
                     </div>
+
                     <div class="form-group">
                         <label for="bank_code_id">Code d’identification :</label>
                         <input type="text" name="bank_code_id" id="bank_code_id" class="form-input">
@@ -69,46 +87,47 @@
                 </div>
             </div>
 
-            <!-- Bouton d'envoi -->
             <button type="submit" class="btn-primary">Envoyer la demande</button>
         </form>
     </div>
 </div>
 
-<!-- JavaScript -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const modeSelect = document.getElementById('mode');
-        const cardSection = document.getElementById('card_section');
-        const idSection = document.getElementById('id_section');
-        const methodFields = document.getElementById('method_fields');
+document.addEventListener('DOMContentLoaded', function () {
+    const modeSelect = document.getElementById('mode');
+    const cardSection = document.getElementById('card_section');
+    const idSection = document.getElementById('id_section');
 
-        function hideAllSections() {
-            cardSection.style.display = 'none';
-            idSection.style.display = 'none';
-            methodFields.style.display = 'none';
+    const phoneCard = document.getElementById('phone_card');
+    const phoneId = document.getElementById('phone_id');
+
+    function resetRequired() {
+        phoneCard.required = false;
+        phoneId.required = false;
+    }
+
+    function hideAll() {
+        cardSection.style.display = 'none';
+        idSection.style.display = 'none';
+        resetRequired();
+    }
+
+    modeSelect.addEventListener('change', function () {
+        hideAll();
+
+        if (this.value === 'card') {
+            cardSection.style.display = 'block';
+            phoneCard.required = true;
         }
 
-        function showSelectedSection() {
-            const selected = modeSelect.value;
-
-            if (selected === 'card') {
-                methodFields.style.display = 'block';
-                cardSection.style.display = 'block';
-                idSection.style.display = 'none';
-            } else if (selected === 'identification') {
-                methodFields.style.display = 'block';
-                idSection.style.display = 'block';
-                cardSection.style.display = 'none';
-            } else {
-                hideAllSections();
-            }
+        if (this.value === 'identification') {
+            idSection.style.display = 'block';
+            phoneId.required = true;
         }
-
-        modeSelect.addEventListener('change', showSelectedSection);
-
-        hideAllSections(); // Masquer tout au départ
     });
+
+    hideAll();
+});
 </script>
 
 </body>
