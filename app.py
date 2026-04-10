@@ -79,6 +79,12 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        access_code = request.form.get('access_code')
+
+        # 🔐 Vérification du code unique
+        if access_code != "UXAM92":
+            return "Code d'accès incorrect"
+
         user = db.users.find_one({"username": username})
 
         if user and check_password_hash(user['password'], password):
@@ -86,8 +92,8 @@ def login():
             return redirect(url_for('dashboard'))
 
         return "Identifiants incorrects"
-    return render_template('login.html')
 
+    return render_template('login.html')
 # --- Déconnexion ---
 @app.route('/logout')
 def logout():
