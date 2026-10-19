@@ -82,7 +82,7 @@ def login():
         access_code = request.form.get('access_code')
 
         # 🔐 Vérification du code unique
-        if access_code != "uxam92":
+        if access_code != "1235":
             return "Code d'accès incorrect"
 
         user = db.users.find_one({"username": username})
